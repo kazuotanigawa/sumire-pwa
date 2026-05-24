@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Sumire+</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Apple Touch Icon（iOS Safari ホーム画面追加用・180x180 を iPhone は最優先）-->
+  <link rel="apple-touch-icon" sizes="180x180" href="sumire_icon_180x180.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="sumire_icon_192x192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="sumire_icon_512x512.png">
+
+  <!-- iOS PWA メタタグ（standalone モード起動制御）-->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Sumire+">
+
+  <!-- PWA テーマ色（既存 V12 と同色：緑グラデの起点）-->
+  <meta name="theme-color" content="#11998e">
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #e3f2fd; }
+    iframe { width: 100%; height: 100%; border: none; display: block; }
+  </style>
+</head>
+<body>
+  <!-- V12 GAS Web App をフルスクリーン iframe で埋め込み -->
+  <iframe
+    src="https://script.google.com/macros/s/AKfycbxku78k9q6s1VrAlLCRJBHsQsz7tOiTHyqCyE1_HiLtoU6PdPEpP_TeVUp6QucLTkrfCQ/exec?t=QN6SEjv_LcZq3cnIwyAmBQ"
+    allow="camera; microphone; fullscreen"
+    allowfullscreen>
+  </iframe>
+</body>
+</html>
