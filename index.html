@@ -21,18 +21,92 @@
   <!-- PWA テーマ色（既存 V12 と同色：緑グラデの起点）-->
   <meta name="theme-color" content="#11998e">
 
+  <!-- Preconnect（GAS Web App 接続前倒し・100-500ms 短縮）-->
+  <link rel="preconnect" href="https://script.google.com" crossorigin>
+  <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: #e3f2fd; }
     iframe { width: 100%; height: 100%; border: none; display: block; }
+
+    /* ローディング画面（iframe ロード中表示・iframe.onload で fade-out）*/
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: #e3f2fd;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      z-index: 100;
+      opacity: 1;
+      transition: opacity 300ms ease-out;
+      pointer-events: auto;
+    }
+    #loading.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #loading img {
+      width: 120px;
+      height: 120px;
+      border-radius: 22px;
+      box-shadow: 0 4px 16px rgba(17, 153, 142, 0.2);
+    }
+    #loading .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(17, 153, 142, 0.2);
+      border-top-color: #11998e;
+      border-radius: 50%;
+      animation: spin 800ms linear infinite;
+    }
+    #loading .text {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+      font-size: 15px;
+      color: #11998e;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
+  <!-- ローディング画面（iframe ロード完了で fade-out・10 秒経過時の保険 setTimeout あり）-->
+  <div id="loading" role="status" aria-live="polite">
+    <img src="sumire_icon_192x192.png" alt="Sumire+">
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="text">読み込み中…</div>
+  </div>
+
   <!-- V12 GAS Web App をフルスクリーン iframe で埋め込み -->
   <iframe
     src="https://script.google.com/macros/s/AKfycbxku78k9q6s1VrAlLCRJBHsQsz7tOiTHyqCyE1_HiLtoU6PdPEpP_TeVUp6QucLTkrfCQ/exec?t=QN6SEjv_LcZq3cnIwyAmBQ"
     allow="camera; microphone; fullscreen"
     allowfullscreen>
   </iframe>
+
+  <script>
+    (function() {
+      var loading = document.getElementById('loading');
+      var iframe = document.querySelector('iframe');
+      var hidden = false;
+      function hideLoading() {
+        if (hidden) return;
+        hidden = true;
+        loading.classList.add('hide');
+        setTimeout(function() { loading.style.display = 'none'; }, 350);
+      }
+      if (iframe) {
+        iframe.addEventListener('load', hideLoading);
+      }
+      // 10 秒経過時の保険（iframe.onload 不発火対策・GAS 異常応答時にユーザーが永久に loading を見続けるのを防ぐ）
+      setTimeout(hideLoading, 10000);
+    })();
+  </script>
 </body>
 </html>
