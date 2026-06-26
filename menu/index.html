@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sumire+</title>
+<!-- 829_ #13 Sumire+ PC トップメニュー（GitHub Pages + iframe ラッパー方式・D-118 流用・案B×案1） -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon_192.png">
+<link rel="apple-touch-icon" href="icon_180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Sumire+">
+<meta name="theme-color" content="#5b3fb0">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+    background: linear-gradient(135deg, #efe9fb, #e7f0fb);
+    color: #2b2b3a;
+  }
+  /* ===== メニュー画面 ===== */
+  #menu-screen {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 48px 24px;
+  }
+  .home-wrap { width: 100%; max-width: 1100px; }
+  .home-header { text-align: center; margin-bottom: 40px; }
+  .home-logo { font-size: 30px; font-weight: 800; color: #5b3fb0; }
+  .home-sub { font-size: 15px; color: #7a6ea8; margin-top: 8px; }
+  .home-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  .home-card {
+    height: 210px; border-radius: 22px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    position: relative; color: #fff; text-decoration: none; border: none; cursor: pointer;
+    font-family: inherit; transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .home-em { font-size: 54px; filter: drop-shadow(0 3px 5px rgba(0,0,0,.18)); line-height: 1; }
+  .home-nm { font-size: 19px; font-weight: 800; }
+  .home-tag {
+    position: absolute; right: 12px; top: 12px;
+    font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px;
+    background: rgba(255,255,255,.28); color: #fff;
+  }
+  .act1 { background: linear-gradient(135deg, #34c77b, #1f9e8f); box-shadow: 0 10px 22px rgba(31,158,143,.30); }
+  .act2 { background: linear-gradient(135deg, #5b8def, #6f86f0); box-shadow: 0 10px 22px rgba(91,141,239,.30); }
+  .soon { background: linear-gradient(135deg, #cfcfda, #b9b9c8); box-shadow: 0 10px 22px rgba(150,150,170,.22); cursor: default; }
+  .home-card.act1:hover, .home-card.act2:hover { transform: translateY(-4px); box-shadow: 0 16px 30px rgba(80,80,120,.28); }
+  .home-card.act1:active, .home-card.act2:active { transform: translateY(-1px); }
+  @media (max-width: 920px) { .home-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px) { .home-grid { grid-template-columns: 1fr; } .home-card { height: 150px; } }
+  /* ===== はめ込み画面（iframe） ===== */
+  #frame-screen { display: none; height: 100vh; flex-direction: column; }
+  #frame-bar {
+    height: 46px; flex: 0 0 46px; display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(135deg, #7c5cd6, #5b8def); color: #fff; padding: 0 14px;
+    box-shadow: 0 2px 8px rgba(80,80,120,.25);
+  }
+  #back-btn {
+    border: none; background: rgba(255,255,255,.22); color: #fff; font-family: inherit;
+    font-size: 14px; font-weight: 800; padding: 7px 14px; border-radius: 999px; cursor: pointer;
+  }
+  #back-btn:hover { background: rgba(255,255,255,.34); }
+  #frame-title { font-size: 15px; font-weight: 800; }
+  #app-frame { flex: 1 1 auto; width: 100%; border: none; background: #fff; }
+</style>
+</head>
+<body>
+  <!-- メニュー画面（案B×案1） -->
+  <div id="menu-screen">
+    <div class="home-wrap">
+      <header class="home-header">
+        <div class="home-logo">🟣 Sumire+ メニュー</div>
+        <div class="home-sub">神戸すみれ訪問看護リハビリ　PC業務メニュー</div>
+      </header>
+      <main class="home-grid">
+        <button type="button" class="home-card act1" id="card-pc">
+          <div class="home-em">📦</div>
+          <div class="home-nm">振分けダッシュボード</div>
+        </button>
+        <a class="home-card act2" id="card-monitor" target="_blank" rel="noopener">
+          <div class="home-em">📊</div>
+          <div class="home-nm">使用率モニター</div>
+        </a>
+        <div class="home-card soon" aria-disabled="true">
+          <span class="home-tag">準備中</span>
+          <div class="home-em">🔗</div>
+          <div class="home-nm">カイポケ連携</div>
+        </div>
+        <div class="home-card soon" aria-disabled="true">
+          <span class="home-tag">準備中</span>
+          <div class="home-em">📝</div>
+          <div class="home-nm">変更報告</div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- はめ込み画面（振分けダッシュボードを全画面 iframe で表示） -->
+  <div id="frame-screen">
+    <div id="frame-bar">
+      <button type="button" id="back-btn">◀ メニュー</button>
+      <span id="frame-title">📦 振分けダッシュボード</span>
+    </div>
+    <iframe id="app-frame" src="" allow="fullscreen" allowfullscreen></iframe>
+  </div>
+
+  <script>
+    // 振分けダッシュボードの本番 Web アプリ URL（GAS exec・誰でもアクセス可=D-083 ALLOWALL・Box認証が壁・秘密値なし）
+    var EXEC = 'https://script.google.com/macros/s/AKfycbx0ipQO6w4GhQQVAfuHyoeF5SeGcVg1gGZZHOwvhpG4oeRio2W0VpFENJLvnixeJdee/exec';
+
+    var menuScreen = document.getElementById('menu-screen');
+    var frameScreen = document.getElementById('frame-screen');
+    var appFrame = document.getElementById('app-frame');
+
+    // 📦 振分け＝アプリ窓の中に全画面ではめ込む（ダッシュボードは ALLOWALL ゆえ埋め込み可）
+    document.getElementById('card-pc').addEventListener('click', function () {
+      appFrame.src = EXEC + '?view=pc';
+      menuScreen.style.display = 'none';
+      frameScreen.style.display = 'flex';
+    });
+    // ◀ メニューに戻る（iframe を止めてメニューへ）
+    document.getElementById('back-btn').addEventListener('click', function () {
+      frameScreen.style.display = 'none';
+      menuScreen.style.display = 'flex';
+      appFrame.src = '';
+    });
+    // 📊 モニター＝埋め込み禁止(SAMEORIGIN)ゆえ別タブで開く
+    document.getElementById('card-monitor').setAttribute('href', EXEC + '?view=monitor');
+  </script>
+</body>
+</html>
