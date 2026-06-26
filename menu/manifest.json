@@ -1,7 +1,7 @@
 {
-  "name": "神戸すみれ Sumire+ メニュー",
+  "name": "Sumire+",
   "short_name": "Sumire+",
-  "description": "神戸すみれ訪問看護リハビリ PC業務メニュー（Sumire+）",
+  "description": "Sumire+ PC業務メニュー",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
