@@ -81,10 +81,10 @@
           <div class="home-em">📦</div>
           <div class="home-nm">振分けダッシュボード</div>
         </button>
-        <a class="home-card act2" id="card-monitor" target="_blank" rel="noopener">
+        <button type="button" class="home-card act2" id="card-monitor">
           <div class="home-em">📊</div>
           <div class="home-nm">使用率モニター</div>
-        </a>
+        </button>
         <div class="home-card soon" aria-disabled="true">
           <span class="home-tag">準備中</span>
           <div class="home-em">🔗</div>
@@ -104,7 +104,8 @@
     <div id="frame-bar">
       <button type="button" id="back-btn">◀ メニュー</button>
       <span id="frame-title">📦 振分けダッシュボード</span>
-    </div>
+    </div><!-- frame-title はカードに応じて差し替え -->
+
     <iframe id="app-frame" src="" allow="fullscreen" allowfullscreen></iframe>
   </div>
 
@@ -115,12 +116,22 @@
     var menuScreen = document.getElementById('menu-screen');
     var frameScreen = document.getElementById('frame-screen');
     var appFrame = document.getElementById('app-frame');
+    var frameTitle = document.getElementById('frame-title');
 
-    // 📦 振分け＝アプリ窓の中に全画面ではめ込む（ダッシュボードは ALLOWALL ゆえ埋め込み可）
-    document.getElementById('card-pc').addEventListener('click', function () {
-      appFrame.src = EXEC + '?view=pc';
+    // 各機能をアプリ窓の中に全画面ではめ込む（振分け・モニターとも ALLOWALL ＝埋め込み可）
+    function openInFrame(view, title) {
+      appFrame.src = EXEC + '?view=' + view;
+      frameTitle.textContent = title;
       menuScreen.style.display = 'none';
       frameScreen.style.display = 'flex';
+    }
+    // 📦 振分けダッシュボード
+    document.getElementById('card-pc').addEventListener('click', function () {
+      openInFrame('pc', '📦 振分けダッシュボード');
+    });
+    // 📊 使用率モニター（振分けと同じく窓内はめ込み・◀メニューで戻れる）
+    document.getElementById('card-monitor').addEventListener('click', function () {
+      openInFrame('monitor', '📊 使用率モニター');
     });
     // ◀ メニューに戻る（iframe を止めてメニューへ）
     document.getElementById('back-btn').addEventListener('click', function () {
@@ -128,8 +139,6 @@
       menuScreen.style.display = 'flex';
       appFrame.src = '';
     });
-    // 📊 モニター＝埋め込み禁止(SAMEORIGIN)ゆえ別タブで開く
-    document.getElementById('card-monitor').setAttribute('href', EXEC + '?view=monitor');
   </script>
 </body>
 </html>
