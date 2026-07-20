@@ -32,6 +32,7 @@
   .home-logo { font-size: 30px; font-weight: 800; color: #5b3fb0; }
   .home-sub { font-size: 15px; color: #7a6ea8; margin-top: 8px; }
   .home-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  .home-note { margin-top: 22px; text-align: center; font-size: 13px; color: #7a6ea8; line-height: 1.7; }
   .home-card {
     height: 210px; border-radius: 22px;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
@@ -84,17 +85,17 @@
           <div class="home-em">📊</div>
           <div class="home-nm">使用率モニター</div>
         </button>
-        <div class="home-card soon" aria-disabled="true">
-          <span class="home-tag">準備中</span>
+        <button type="button" class="home-card act1" id="card-kaipoke">
           <div class="home-em">🔗</div>
           <div class="home-nm">カイポケ連携</div>
-        </div>
+        </button>
         <div class="home-card soon" aria-disabled="true">
           <span class="home-tag">準備中</span>
           <div class="home-em">📝</div>
           <div class="home-nm">変更報告</div>
         </div>
       </main>
+      <p class="home-note">「カイポケ連携」を押しても何も起きないときは、そのパソコンで <b>カイポケ連携_登録.bat</b> を1回だけダブルクリックしてください（1台につき最初の1回だけ）。</p>
     </div>
   </div>
 
@@ -131,6 +132,10 @@
     // 📊 使用率モニター（振分けと同じく窓内はめ込み・◀メニューで戻れる）
     document.getElementById('card-monitor').addEventListener('click', function () {
       openInFrame('monitor', '📊 使用率モニター');
+    });
+    // 🔗 カイポケ連携（このパソコンの「カイポケ取込」を起動する＝画面内はめ込みでは動かないので location で開く）
+    document.getElementById('card-kaipoke').addEventListener('click', function () {
+      location.href = 'sumire-kaipoke:run';
     });
     // ◀ メニューに戻る（iframe を止めてメニューへ）
     document.getElementById('back-btn').addEventListener('click', function () {
