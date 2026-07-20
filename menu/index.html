@@ -48,9 +48,15 @@
   }
   .act1 { background: linear-gradient(135deg, #34c77b, #1f9e8f); box-shadow: 0 10px 22px rgba(31,158,143,.30); }
   .act2 { background: linear-gradient(135deg, #5b8def, #6f86f0); box-shadow: 0 10px 22px rgba(91,141,239,.30); }
+  /* カイポケ取込＝絵から取り出した黄色〜オレンジ（1166_） */
+  .act3 { background: linear-gradient(135deg, #f9b233, #ef8200); box-shadow: 0 10px 22px rgba(239,130,0,.30); }
   .soon { background: linear-gradient(135deg, #cfcfda, #b9b9c8); box-shadow: 0 10px 22px rgba(150,150,170,.22); cursor: default; }
-  .home-card.act1:hover, .home-card.act2:hover { transform: translateY(-4px); box-shadow: 0 16px 30px rgba(80,80,120,.28); }
-  .home-card.act1:active, .home-card.act2:active { transform: translateY(-1px); }
+  .home-card.act1:hover, .home-card.act2:hover, .home-card.act3:hover { transform: translateY(-4px); box-shadow: 0 16px 30px rgba(80,80,120,.28); }
+  .home-card.act1:active, .home-card.act2:active, .home-card.act3:active { transform: translateY(-1px); }
+  /* 絵は .home-em と同じ 54px 枠に収め、字の位置をそろえる（transform ゆえレイアウト不動） */
+  .ic-kaipoke { height: 54px; display: flex; align-items: flex-end; justify-content: center;
+                filter: drop-shadow(0 5px 9px rgba(80,35,0,.42)); }
+  .ic-kaipoke img { height: 80px; width: auto; display: block; transform: translateY(19px); }
   @media (max-width: 920px) { .home-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 520px) { .home-grid { grid-template-columns: 1fr; } .home-card { height: 150px; } }
   /* ===== はめ込み画面（iframe） ===== */
@@ -85,9 +91,9 @@
           <div class="home-em">📊</div>
           <div class="home-nm">使用率モニター</div>
         </button>
-        <button type="button" class="home-card act1" id="card-kaipoke">
-          <div class="home-em">🔗</div>
-          <div class="home-nm">カイポケ連携</div>
+        <button type="button" class="home-card act3" id="card-kaipoke">
+          <span class="ic-kaipoke"><img src="kaipoke.png" alt=""></span>
+          <div class="home-nm">カイポケ取込</div>
         </button>
         <div class="home-card soon" aria-disabled="true">
           <span class="home-tag">準備中</span>
@@ -95,7 +101,7 @@
           <div class="home-nm">変更報告</div>
         </div>
       </main>
-      <p class="home-note">「カイポケ連携」を押しても何も起きないときは、そのパソコンで <b>カイポケ連携_登録.bat</b> を1回だけダブルクリックしてください（1台につき最初の1回だけ）。</p>
+      <p class="home-note">「カイポケ取込」を押しても何も起きないときは、そのパソコンで <b>カイポケ連携_登録.bat</b> を1回だけダブルクリックしてください（1台につき最初の1回だけ）。</p>
     </div>
   </div>
 
@@ -133,7 +139,7 @@
     document.getElementById('card-monitor').addEventListener('click', function () {
       openInFrame('monitor', '📊 使用率モニター');
     });
-    // 🔗 カイポケ連携（このパソコンの「カイポケ取込」を起動する＝画面内はめ込みでは動かないので location で開く）
+    // カイポケ取込（このパソコンの「カイポケ取込」を起動する＝画面内はめ込みでは動かないので location で開く）
     document.getElementById('card-kaipoke').addEventListener('click', function () {
       location.href = 'sumire-kaipoke:run';
     });
