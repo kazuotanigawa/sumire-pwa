@@ -57,6 +57,10 @@
   .ic-kaipoke { height: 54px; display: flex; align-items: flex-end; justify-content: center;
                 filter: drop-shadow(0 5px 9px rgba(80,35,0,.42)); }
   .ic-kaipoke img { height: 80px; width: auto; display: block; transform: translateY(19px); }
+  /* (1265_/D-325) カイポケ取込の「前回の取込日時」1行だけ（谷川さんが調整プレビューで実測確定 2026-07-27）。
+     ほかの4枚と寸法は共有しない＝この行だけの見た目。読めないうちは hidden＝行ごと出ない（＝今までどおりのボタン）。 */
+  .home-stamp { font-size: 15px; font-weight: 700; color: #fff; background: rgba(0,0,0,.16);
+                padding: 3px 12px; border-radius: 999px; margin-top: 2px; white-space: nowrap; line-height: 1.4; }
   @media (max-width: 920px) { .home-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 520px) { .home-grid { grid-template-columns: 1fr; } .home-card { height: 150px; } }
   /* ===== はめ込み画面（iframe） ===== */
@@ -94,6 +98,7 @@
         <button type="button" class="home-card act3" id="card-kaipoke">
           <span class="ic-kaipoke"><img src="kaipoke.png" alt=""></span>
           <div class="home-nm">カイポケ取込</div>
+          <div class="home-stamp" id="kd-stamp" hidden></div><!-- 1265_/D-325 前回の取込日時（読めるまで出さない） -->
         </button>
         <div class="home-card soon" aria-disabled="true">
           <span class="home-tag">準備中</span>
@@ -149,6 +154,48 @@
       menuScreen.style.display = 'flex';
       appFrame.src = '';
     });
+
+    // ================================================================================
+    // (1265_/D-325) 「カイポケ取込」ボタンに前回の取込日時を出す。
+    //   何台かで運用したとき「もう誰かが取り込んでいる」と気づけるようにする（谷川さん明示 2026-07-27）。
+    //   このページ（GitHub Pages）から GAS を fetch で直接読むことは公式に不可（CORS の事前確認 OPTIONS 非対応）。
+    //   → 既に動いている「GAS を iframe に埋め込む」経路を流用し、見えない iframe から postMessage で文字列だけ受け取る。
+    //   GAS は中身をさらに googleusercontent の枠に入れて出す（公式仕様の二重 iframe）ので、
+    //   届く相手のオリジンは script.google.com ではなく *.googleusercontent.com になる＝そこだけを許す。
+    //   読めなければ何も出さない（行ごと出ない＝今までどおりのボタン。古い日時や「済」は絶対に出さない）。
+    // ================================================================================
+    (function () {
+      var stamp = document.getElementById('kd-stamp');
+      if (!stamp) return;
+      var done = false, fr = null;
+      // 受け取る相手を Google の画面だけに絞る（送る側も宛先をこのページに限定済み＝両方やる）
+      function isGasOrigin(o) {
+        return o === 'https://script.google.com' || /^https:\/\/[a-z0-9-]+\.googleusercontent\.com$/.test(String(o));
+      }
+      function cleanup() {
+        window.removeEventListener('message', onMsg);
+        if (fr && fr.parentNode) { fr.parentNode.removeChild(fr); }
+        fr = null;
+      }
+      function onMsg(ev) {
+        if (done) return;
+        if (!isGasOrigin(ev.origin)) return;                 // 宛先違いは捨てる
+        var d = ev.data || {};
+        if (d.type !== 'kd-last-import') return;
+        done = true;
+        var t = String(d.text || '').slice(0, 32);           // 出すのは短い1行だけ（textContent＝そのまま文字として出る）
+        if (t) { stamp.textContent = t; stamp.hidden = false; }   // 空なら出さない
+        cleanup();
+      }
+      window.addEventListener('message', onMsg);
+      fr = document.createElement('iframe');
+      fr.style.cssText = 'position:absolute;width:0;height:0;border:0;left:-9999px;top:-9999px;';
+      fr.setAttribute('aria-hidden', 'true');
+      fr.setAttribute('title', '');
+      fr.src = EXEC + '?view=lastimport';
+      document.body.appendChild(fr);
+      setTimeout(function () { if (!done) { done = true; cleanup(); } }, 3000);   // 3秒で諦める＝何も出さない
+    })();
   </script>
 </body>
 </html>
