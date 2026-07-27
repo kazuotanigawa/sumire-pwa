@@ -60,7 +60,13 @@
   /* (1265_/D-325) カイポケ取込の「前回の取込日時」1行だけ（谷川さんが調整プレビューで実測確定 2026-07-27）。
      ほかの4枚と寸法は共有しない＝この行だけの見た目。読めないうちは hidden＝行ごと出ない（＝今までどおりのボタン）。 */
   .home-stamp { font-size: 15px; font-weight: 700; color: #fff; background: rgba(0,0,0,.16);
-                padding: 3px 12px; border-radius: 999px; margin-top: 2px; white-space: nowrap; line-height: 1.4; }
+                padding: 3px 12px; border-radius: 999px; margin-top: 2px; white-space: nowrap; line-height: 1.4;
+                text-align: center; }
+  /* (1269_/D-327) 状態の出し分け＝取込中は濃いめの帯／失敗は白地に赤字（遠目でも「赤い＝いつもと違う」と分かる）。
+     ボタン4枚の寸法・色・絵・並びは変えない＝この1行の中だけの見た目。 */
+  .home-stamp.run { background: rgba(0,0,0,.28); }
+  .home-stamp.ng  { background: #fff; color: #c62828; }
+  .home-stamp .kd-sub { display: block; font-size: 13px; font-weight: 700; line-height: 1.35; }
   @media (max-width: 920px) { .home-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 520px) { .home-grid { grid-template-columns: 1fr; } .home-card { height: 150px; } }
   /* ===== はめ込み画面（iframe） ===== */
@@ -98,7 +104,10 @@
         <button type="button" class="home-card act3" id="card-kaipoke">
           <span class="ic-kaipoke"><img src="kaipoke.png" alt=""></span>
           <div class="home-nm">カイポケ取込</div>
-          <div class="home-stamp" id="kd-stamp" hidden></div><!-- 1265_/D-325 前回の取込日時（読めるまで出さない） -->
+          <!-- 1265_/D-325 前回の取込日時 → 1269_/D-327 取込中／終わった／失敗 の状態1か所（読めるまで出さない） -->
+          <div class="home-stamp" id="kd-stamp" hidden>
+            <span id="kd-stamp-t"></span><span class="kd-sub" id="kd-stamp-s" hidden></span>
+          </div>
         </button>
         <div class="home-card soon" aria-disabled="true">
           <span class="home-tag">準備中</span>
@@ -162,38 +171,87 @@
     //   GAS は中身をさらに googleusercontent の枠に入れて出す（公式仕様の二重 iframe）ので、
     //   届く相手のオリジンは script.google.com ではなく *.googleusercontent.com になる＝そこだけを許す。
     //   読めなければ何も出さない（行ごと出ない＝今までどおりのボタン。古い日時や「済」は絶対に出さない）。
+    //
+    //   (1269_/D-327) 出す中身を「取込中／終わった／失敗（理由つき）」の5通りに増やし、確実に受け取れるようにした。
+    //     2026-07-28 未明の不具合＝取込も記録も成功していたのにボタンに何も出なかった。
+    //     落ちていたのは「画面が受け取る最後の一歩」だけ（3秒で諦める・1回きり・開いた瞬間の1回だけ）だった。
+    //     → ①20秒待つ ②受け取れなければもう一度だけ試す ③30秒ごとに読み直す の3点セットにする（G-525）。
+    //     受け取る側は必ず送り主（origin）と名札（type）を確かめる＝公式の推奨（MDN・2026-07-28 確認）。
     // ================================================================================
     (function () {
       var stamp = document.getElementById('kd-stamp');
-      if (!stamp) return;
-      var done = false, fr = null;
-      // 受け取る相手を Google の画面だけに絞る（送る側も宛先をこのページに限定済み＝両方やる）
+      var line1 = document.getElementById('kd-stamp-t');
+      var line2 = document.getElementById('kd-stamp-s');
+      if (!stamp || !line1 || !line2) return;
+
+      var WAIT_MS = 20000;   // 1回あたり20秒待つ（GAS の画面はさらに別の枠に入って配られる＝初回は3秒を超えうる・G-522）
+      var GAP_MS  = 30000;   // 30秒ごとに読み直す（開きっぱなしのパソコンでも新しくなる）
+      var TRIES   = 2;       // 受け取れなければ、もう一度だけ作り直して試す（合計2回）
+      var busy = false;
+
+      // 受け取る相手を Google の画面だけに絞る（送る側も宛先をこのページに限定済み＝両方やる）。
+      // 名前の区切りの数は問わない（…-script.googleusercontent.com のような形も許す）が、
+      // 末尾が googleusercontent.com であることは必ず確かめる＝似せ名（…googleusercontent.com.evil.com）は通さない。
       function isGasOrigin(o) {
-        return o === 'https://script.google.com' || /^https:\/\/[a-z0-9-]+\.googleusercontent\.com$/.test(String(o));
+        o = String(o);
+        return o === 'https://script.google.com' || /^https:\/\/[a-z0-9.-]+\.googleusercontent\.com$/.test(o);
       }
-      function cleanup() {
-        window.removeEventListener('message', onMsg);
-        if (fr && fr.parentNode) { fr.parentNode.removeChild(fr); }
-        fr = null;
+      // 出すのは GAS が組み立てた文字そのまま（画面側では判定も組み立てもしない＝G-353/G-354）
+      function show(d) {
+        var t = String(d.text || '').slice(0, 40);
+        var s = String(d.sub  || '').slice(0, 40);
+        var k = String(d.kind || '');
+        stamp.className = 'home-stamp' + (k === 'ng' ? ' ng' : (k === 'run' ? ' run' : ''));
+        if (!t) {                                  // 何も来なければ行ごと出さない（今までどおりのボタン）
+          line1.textContent = ''; line2.textContent = ''; line2.hidden = true; stamp.hidden = true; return;
+        }
+        line1.textContent = t;                     // textContent＝そのまま文字として出る（作り込みを差し込まれない）
+        if (s) { line2.textContent = s; line2.hidden = false; }
+        else   { line2.textContent = ''; line2.hidden = true;  }
+        stamp.hidden = false;
       }
-      function onMsg(ev) {
-        if (done) return;
-        if (!isGasOrigin(ev.origin)) return;                 // 宛先違いは捨てる
-        var d = ev.data || {};
-        if (d.type !== 'kd-last-import') return;
-        done = true;
-        var t = String(d.text || '').slice(0, 32);           // 出すのは短い1行だけ（textContent＝そのまま文字として出る）
-        if (t) { stamp.textContent = t; stamp.hidden = false; }   // 空なら出さない
-        cleanup();
+      function ask(triesLeft) {
+        var got = false, fr = null, timer = null;
+        function cleanup() {
+          window.removeEventListener('message', onMsg);
+          if (timer) { clearTimeout(timer); timer = null; }
+          if (fr && fr.parentNode) { fr.parentNode.removeChild(fr); }
+          fr = null;
+        }
+        function onMsg(ev) {
+          if (got) return;
+          if (!isGasOrigin(ev.origin)) return;                 // 送り主違いは捨てる
+          var d = ev.data || {};
+          if (d.type !== 'kd-last-import') return;             // 名札違いは捨てる
+          got = true;
+          cleanup();
+          busy = false;
+          show(d);
+        }
+        window.addEventListener('message', onMsg);
+        fr = document.createElement('iframe');
+        fr.style.cssText = 'position:absolute;width:0;height:0;border:0;left:-9999px;top:-9999px;';
+        fr.setAttribute('aria-hidden', 'true');
+        fr.setAttribute('title', '');
+        fr.src = EXEC + '?view=lastimport&t=' + Date.now();     // 毎回ちがう合言葉＝古い写しを見せられない
+        document.body.appendChild(fr);
+        timer = setTimeout(function () {
+          if (got) return;
+          cleanup();
+          if (triesLeft > 1) { ask(triesLeft - 1); }            // もう一度だけ作り直して試す
+          else { busy = false; }                                // 受け取れなかった＝いまの表示はそのまま（消さない）
+        }, WAIT_MS);
       }
-      window.addEventListener('message', onMsg);
-      fr = document.createElement('iframe');
-      fr.style.cssText = 'position:absolute;width:0;height:0;border:0;left:-9999px;top:-9999px;';
-      fr.setAttribute('aria-hidden', 'true');
-      fr.setAttribute('title', '');
-      fr.src = EXEC + '?view=lastimport';
-      document.body.appendChild(fr);
-      setTimeout(function () { if (!done) { done = true; cleanup(); } }, 3000);   // 3秒で諦める＝何も出さない
+      function tick() {
+        if (busy) return;
+        if (document.hidden) return;   // 裏に回っている間は休む（無駄なアクセスをしない・API-1）
+        busy = true;
+        ask(TRIES);
+      }
+      tick();
+      setInterval(tick, GAP_MS);
+      // 裏から戻ったらすぐ読み直す（裏にいる間はブラウザが時計を遅らせる＝公式仕様・2026-07-28 確認）
+      document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
     })();
   </script>
 </body>
