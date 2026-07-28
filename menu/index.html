@@ -67,6 +67,23 @@
   .home-stamp.run { background: rgba(0,0,0,.28); }
   .home-stamp.ng  { background: #fff; color: #c62828; }
   .home-stamp .kd-sub { display: block; font-size: 13px; font-weight: 700; line-height: 1.35; }
+  /* (1271_/D-328) 取込中の見せ方＝くるくる＋横棒＋「あと約○分」。
+     数字は谷川さんが調整ページ（P004_カイポケ取込中の見た目調整_案B_2026-07-28.html）で実測して確定。
+     14px／線3px／すき間7px／字15px／帯 rgba(0,0,0,.28)／横棒 太さ8px・下から0px・左右0px・角0px・白／
+     「あと約○分」13px・下から11px・右から12px。
+     ★ボタン4枚の寸法・色・絵・並びは1文字も変えない＝カイポケ取込の1枚の中だけの見た目。 */
+  .home-stamp.run { display: flex; align-items: center; gap: 7px; }
+  .spin { width: 14px; height: 14px; border: 3px solid rgba(255,255,255,.35);
+          border-top-color: #fff; border-radius: 50%; animation: kd-sp .9s linear infinite; flex: none; }
+  @keyframes kd-sp { to { transform: rotate(360deg); } }
+  .bar-wrap { position: absolute; left: 0; right: 0; bottom: 0; height: 8px;
+              background: rgba(0,0,0,.20); border-radius: 0; overflow: hidden; }
+  /* 進む速さは読み直しの間かく（5秒）と同じにする＝更新のあいだもなめらかに動いて見える（カクカクさせない） */
+  .bar { height: 100%; width: 0%; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,.6);
+         border-radius: 0; transition: width 5s linear; }
+  .bar.fin { transition: width .45s ease-out; }   /* 本当に終わったときだけ 100% まで一気に */
+  .bar-cap { position: absolute; right: 12px; bottom: 11px; font-size: 13px;
+             font-weight: 700; color: rgba(255,255,255,.95); }
   @media (max-width: 920px) { .home-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 520px) { .home-grid { grid-template-columns: 1fr; } .home-card { height: 150px; } }
   /* ===== はめ込み画面（iframe） ===== */
@@ -104,10 +121,13 @@
         <button type="button" class="home-card act3" id="card-kaipoke">
           <span class="ic-kaipoke"><img src="kaipoke.png" alt=""></span>
           <div class="home-nm">カイポケ取込</div>
-          <!-- 1265_/D-325 前回の取込日時 → 1269_/D-327 取込中／終わった／失敗 の状態1か所（読めるまで出さない） -->
+          <!-- 1265_/D-325 前回の取込日時 → 1269_/D-327 取込中／終わった／失敗 の状態1か所（読めるまで出さない）
+               → 1271_/D-328 取込中はくるくる＋横棒＋「あと約○分」を足す（取込中でないときは今までどおりの1行） -->
           <div class="home-stamp" id="kd-stamp" hidden>
-            <span id="kd-stamp-t"></span><span class="kd-sub" id="kd-stamp-s" hidden></span>
+            <span class="spin" id="kd-spin" hidden></span><span id="kd-stamp-t"></span><span class="kd-sub" id="kd-stamp-s" hidden></span>
           </div>
+          <div class="bar-cap" id="kd-cap" hidden></div>
+          <div class="bar-wrap" id="kd-bar-wrap" hidden><div class="bar" id="kd-bar"></div></div>
         </button>
         <div class="home-card soon" aria-disabled="true">
           <span class="home-tag">準備中</span>
@@ -152,10 +172,6 @@
     document.getElementById('card-monitor').addEventListener('click', function () {
       openInFrame('monitor', '📊 使用率モニター');
     });
-    // カイポケ取込（このパソコンの「カイポケ取込」を起動する＝画面内はめ込みでは動かないので location で開く）
-    document.getElementById('card-kaipoke').addEventListener('click', function () {
-      location.href = 'sumire-kaipoke:run';
-    });
     // ◀ メニューに戻る（iframe を止めてメニューへ）
     document.getElementById('back-btn').addEventListener('click', function () {
       frameScreen.style.display = 'none';
@@ -177,17 +193,78 @@
     //     落ちていたのは「画面が受け取る最後の一歩」だけ（3秒で諦める・1回きり・開いた瞬間の1回だけ）だった。
     //     → ①20秒待つ ②受け取れなければもう一度だけ試す ③30秒ごとに読み直す の3点セットにする（G-525）。
     //     受け取る側は必ず送り主（origin）と名札（type）を確かめる＝公式の推奨（MDN・2026-07-28 確認）。
+    //
+    //   (1271_/D-328) 谷川さん実機の困りごと2つを直す（2026-07-28）。
+    //     ①押してもすぐ「取込中」にならない（合図が届くまで十数秒＋30秒ごと＝最悪40秒以上）→2回押してしまった。
+    //     ②動いているのか分からない（実際は3〜4分かかるのに字が止まったまま）。
+    //     → 押した瞬間に画面が自分で「取込中」に変え、同時にボタンを押せなくする（GAS の返事を待たない）。
+    //       1分たっても GAS 側が取込中にならなければ、押せない状態を解いて元の表示に戻す（嘘をつかない）。
+    //       取込中だけ 5秒ごとに読み直す（終わった瞬間に切り替わる）。それ以外は今までどおり30秒ごと。
+    //     ★横棒の割合も「あと約○分」も GAS 側で作り終わっている＝ここでは計算しない（G-353/G-354）。
+    //     ★横棒は絶対に戻さない／100% は「終わった」を受け取ったときだけ（作法・Eleken 2026-07-28）。
     // ================================================================================
     (function () {
+      var card  = document.getElementById('card-kaipoke');
       var stamp = document.getElementById('kd-stamp');
       var line1 = document.getElementById('kd-stamp-t');
       var line2 = document.getElementById('kd-stamp-s');
-      if (!stamp || !line1 || !line2) return;
+      var spin  = document.getElementById('kd-spin');
+      var cap   = document.getElementById('kd-cap');
+      var barWrap = document.getElementById('kd-bar-wrap');
+      var bar     = document.getElementById('kd-bar');
+      if (!card || !stamp || !line1 || !line2 || !spin || !cap || !barWrap || !bar) return;
 
       var WAIT_MS = 20000;   // 1回あたり20秒待つ（GAS の画面はさらに別の枠に入って配られる＝初回は3秒を超えうる・G-522）
       var GAP_MS  = 30000;   // 30秒ごとに読み直す（開きっぱなしのパソコンでも新しくなる）
       var TRIES   = 2;       // 受け取れなければ、もう一度だけ作り直して試す（合計2回）
+      var GAP_RUN_MS  = 5000;    // (1271_/D-328) 取込中だけ5秒ごと（終わった瞬間に切り替わる）
+      var LOCAL_MS    = 60000;   // (1271_/D-328) 1分たっても GAS が取込中にならなければ元の表示に戻す
+      var FIN_MS      = 800;     // (1271_/D-328) 100% を見せてから日時に切り替えるまで
       var busy = false;
+
+      // いまの見せ方＝''（今までどおりの1行）／'local'（押した直後・GAS の返事待ち）／'run'（GAS が取込中）／'fin'（100%を見せている最中）
+      var mode = '';
+      var barPct = 0;        // いま出している割合（ここより下げない）
+      var lastData = null;   // 押す前に出していた中身（1分で戻すときに使う）
+      var mine = false;      // このパソコンが押して始めた取込かどうか（＝押せなくしてよいのは自分で押したときだけ）
+      var localTimer = null;
+      var gapTimer = null;
+      var gapNow = 0;
+
+      // 読み直しの間かくを切り替える（取込中だけ5秒・それ以外は30秒）
+      function setGap(ms) {
+        if (gapNow === ms && gapTimer) return;
+        gapNow = ms;
+        if (gapTimer) clearInterval(gapTimer);
+        gapTimer = setInterval(tick, ms);
+      }
+      // 横棒＝絶対に戻さない（GAS から小さい値が来ても無視する）。snap のときだけ動かさずに置き直す。
+      function setBar(pct, snap) {
+        var p = Number(pct);
+        if (!isFinite(p)) return;
+        if (p < 0) p = 0;
+        if (p > 100) p = 100;
+        if (!snap && p <= barPct) return;
+        barPct = p;
+        if (snap) {
+          bar.style.transition = 'none';
+          bar.style.width = p + '%';
+          void bar.offsetWidth;                 // ここで一度描かせる＝次の変化からまた動くようになる
+          bar.style.transition = '';
+        } else {
+          bar.style.width = p + '%';
+        }
+      }
+      // くるくる・横棒・「あと約○分」を出す／しまう
+      function runVisual(on) {
+        spin.hidden = !on;
+        barWrap.hidden = !on;
+        cap.hidden = !on;
+        if (!on) { bar.classList.remove('fin'); setBar(0, true); cap.textContent = ''; }
+      }
+      // 時刻だけの書式（GAS の _kdHm_ と同じ＝時は0埋めしない・分だけ2桁）。
+      // ★押した瞬間はまだ GAS が何も知らないので、ここだけはブラウザの時計で作る（数秒後に GAS の文字で上書きされる）。
+      function hm(d) { return d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2); }
 
       // 受け取る相手を Google の画面だけに絞る（送る側も宛先をこのページに限定済み＝両方やる）。
       // 名前の区切りの数は問わない（…-script.googleusercontent.com のような形も許す）が、
@@ -197,7 +274,8 @@
         return o === 'https://script.google.com' || /^https:\/\/[a-z0-9.-]+\.googleusercontent\.com$/.test(o);
       }
       // 出すのは GAS が組み立てた文字そのまま（画面側では判定も組み立てもしない＝G-353/G-354）
-      function show(d) {
+      //   取込中のときだけ、2行目（あと約○分）は帯の中ではなくカードの右下（.bar-cap）に出す。
+      function paint(d) {
         var t = String(d.text || '').slice(0, 40);
         var s = String(d.sub  || '').slice(0, 40);
         var k = String(d.kind || '');
@@ -206,10 +284,72 @@
           line1.textContent = ''; line2.textContent = ''; line2.hidden = true; stamp.hidden = true; return;
         }
         line1.textContent = t;                     // textContent＝そのまま文字として出る（作り込みを差し込まれない）
-        if (s) { line2.textContent = s; line2.hidden = false; }
-        else   { line2.textContent = ''; line2.hidden = true;  }
+        if (s && k !== 'run') { line2.textContent = s; line2.hidden = false; }
+        else                  { line2.textContent = ''; line2.hidden = true;  }
+        if (k === 'run') { cap.textContent = s; }   // 「あと約○分」（95%を超えると GAS が空にしてくる）
         stamp.hidden = false;
       }
+      // 取込中の見せ方をやめて、ふつうの1行へ戻す
+      function endRun(d) {
+        mode = '';
+        mine = false;
+        runVisual(false);
+        card.removeAttribute('aria-disabled');
+        setGap(GAP_MS);
+        paint(d);
+        lastData = d;
+      }
+      // 押した直後の「取込中」を取り消して、押す前の表示に戻す（＝起動できていないのに嘘をつかない）
+      function revertLocal() {
+        if (localTimer) { clearTimeout(localTimer); localTimer = null; }
+        if (mode !== 'local') return;
+        endRun(lastData || { text: '', sub: '', kind: '' });   // 警告は出さない＝押す前と同じ見た目に戻すだけ
+      }
+      function show(d) {
+        var k = String(d.kind || '');
+        if (mode === 'fin') return;                      // 100% を見せている最中は割り込ませない
+        if (k === 'run') {                               // GAS が「取込中」＝ここからは本物の割合で動かす
+          if (localTimer) { clearTimeout(localTimer); localTimer = null; }
+          mode = 'run';
+          runVisual(true);
+          setGap(GAP_RUN_MS);
+          paint(d);
+          if (d.progress) setBar(d.progress.pct);        // 小さい値は setBar が無視する＝戻らない
+          return;
+        }
+        if (mode === 'local') return;                    // 押した直後＝GAS がまだ取込中になっていない（1分たてば戻す）
+        if (mode === 'run') {                            // 取込中が終わった
+          if (k === 'ok') {                              // 本当に終わったときだけ 100% にしてから日時へ
+            mode = 'fin';
+            bar.classList.add('fin');
+            setBar(100);
+            setTimeout(function () { mode = 'run'; endRun(d); }, FIN_MS);
+          } else {
+            endRun(d);                                   // 失敗・記録なし＝100% にしない（偽らない）
+          }
+          return;
+        }
+        paint(d);
+        lastData = d;
+      }
+
+      // カイポケ取込（このパソコンの「カイポケ取込」を起動する＝画面内はめ込みでは動かないので location で開く）
+      card.addEventListener('click', function () {
+        if (mine) return;                       // 二重押しを止める（1分たつか、取込が終われば自動的に解ける）
+        location.href = 'sumire-kaipoke:run';
+        mine = true;
+        mode = 'local';
+        card.setAttribute('aria-disabled', 'true');
+        lastData = lastData || { text: '', sub: '', kind: '' };
+        runVisual(true);
+        setBar(0, true);
+        cap.textContent = '';
+        paint({ text: '取込中（' + hm(new Date()) + 'から）', sub: '', kind: 'run' });
+        setGap(GAP_RUN_MS);
+        if (localTimer) clearTimeout(localTimer);
+        localTimer = setTimeout(revertLocal, LOCAL_MS);
+        tick();                                          // すぐ読みに行く（GAS が取込中になり次第、本物の割合に切り替わる）
+      });
       function ask(triesLeft) {
         var got = false, fr = null, timer = null;
         function cleanup() {
@@ -249,7 +389,7 @@
         ask(TRIES);
       }
       tick();
-      setInterval(tick, GAP_MS);
+      setGap(GAP_MS);
       // 裏から戻ったらすぐ読み直す（裏にいる間はブラウザが時計を遅らせる＝公式仕様・2026-07-28 確認）
       document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
     })();
