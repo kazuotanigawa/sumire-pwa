@@ -50,13 +50,20 @@
   .act2 { background: linear-gradient(135deg, #5b8def, #6f86f0); box-shadow: 0 10px 22px rgba(91,141,239,.30); }
   /* カイポケ取込＝絵から取り出した黄色〜オレンジ（1166_） */
   .act3 { background: linear-gradient(135deg, #f9b233, #ef8200); box-shadow: 0 10px 22px rgba(239,130,0,.30); }
+  /* (1275_/D-329) 職員名簿＝濃い紫（谷川さん決定 2026-07-28）。2段目に1枚。今の4枚は1バイトも変えない。 */
+  .act4 { background: linear-gradient(135deg,#6d43d6,#46249c); box-shadow:0 10px 22px rgba(70,36,156,.32); }
   .soon { background: linear-gradient(135deg, #cfcfda, #b9b9c8); box-shadow: 0 10px 22px rgba(150,150,170,.22); cursor: default; }
-  .home-card.act1:hover, .home-card.act2:hover, .home-card.act3:hover { transform: translateY(-4px); box-shadow: 0 16px 30px rgba(80,80,120,.28); }
-  .home-card.act1:active, .home-card.act2:active, .home-card.act3:active { transform: translateY(-1px); }
+  /* 🚨 押し心地の行は2本ある（:hover と :active）。両方に act4 を足す＝この1枚だけ挙動が違うのを防ぐ（1167_ の教訓） */
+  .home-card.act1:hover, .home-card.act2:hover, .home-card.act3:hover, .home-card.act4:hover { transform: translateY(-4px); box-shadow: 0 16px 30px rgba(80,80,120,.28); }
+  .home-card.act1:active, .home-card.act2:active, .home-card.act3:active, .home-card.act4:active { transform: translateY(-1px); }
   /* 絵は .home-em と同じ 54px 枠に収め、字の位置をそろえる（transform ゆえレイアウト不動） */
   .ic-kaipoke { height: 54px; display: flex; align-items: flex-end; justify-content: center;
                 filter: drop-shadow(0 5px 9px rgba(80,35,0,.42)); }
   .ic-kaipoke img { height: 80px; width: auto; display: block; transform: translateY(19px); }
+  /* (1275_/D-329) 職員名簿の絵。カイポケと同じ作法（54px 枠・下端そろえ・影だけ・白いふち無し） */
+  .ic-roster { height: 54px; display: flex; align-items: flex-end; justify-content: center;
+               filter: drop-shadow(0 5px 9px rgba(45,15,90,.48)); }
+  .ic-roster img { height: 80px; width: auto; display: block; transform: translateY(17px); }
   /* (1265_/D-325) カイポケ取込の「前回の取込日時」1行だけ（谷川さんが調整プレビューで実測確定 2026-07-27）。
      ほかの4枚と寸法は共有しない＝この行だけの見た目。読めないうちは hidden＝行ごと出ない（＝今までどおりのボタン）。 */
   .home-stamp { font-size: 15px; font-weight: 700; color: #fff; background: rgba(0,0,0,.16);
@@ -134,6 +141,13 @@
           <div class="home-em">📝</div>
           <div class="home-nm">変更報告</div>
         </div>
+        <!-- (1275_/D-329) 5枚目＝職員名簿。4列グリッドの5枚目ゆえ自動で2段目の左端に出る。
+             まねる相手は card-pc / card-monitor（押したら窓内にはめ込むだけの単純な形）。
+             card-kaipoke は取込の状態表示（くるくる・横棒・postMessage）を持つ特別な作りゆえ まねない。 -->
+        <button type="button" class="home-card act4" id="card-staff">
+          <span class="ic-roster"><img src="staff_roster.png" alt=""></span>
+          <div class="home-nm">職員名簿</div>
+        </button>
       </main>
     </div>
   </div>
@@ -171,6 +185,10 @@
     // 📊 使用率モニター（振分けと同じく窓内はめ込み・◀メニューで戻れる）
     document.getElementById('card-monitor').addEventListener('click', function () {
       openInFrame('monitor', '📊 使用率モニター');
+    });
+    // 👥 職員名簿（1275_/D-329・振分け・モニターと同じ窓内はめ込み＝◀メニューで戻れる）
+    document.getElementById('card-staff').addEventListener('click', function () {
+      openInFrame('staff', '👥 職員名簿');
     });
     // ◀ メニューに戻る（iframe を止めてメニューへ）
     document.getElementById('back-btn').addEventListener('click', function () {
