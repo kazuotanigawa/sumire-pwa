@@ -441,8 +441,11 @@
     //   🚨 ファイルは1バイトも読まない・どこにも送らない（案内を出すだけ）。
     // ================================================================================
     (function () {
-      var hint = document.getElementById('drop-hint');
+      // 🚨 案内の入れ物は**この script より後ろ**に置いてある＝ここで一度に取ると必ず null になる
+      //    （2026-08-28 実機のブラウザで実際に空振りした＝S-1c が赤になって見つけた）。
+      //    ∴ 使うときに取りに行く。
       var hintTimer = null;
+      function hintEl() { return document.getElementById('drop-hint'); }
       // ドラッグしているものが「ファイル（フォルダを含む）」かどうか。
       //   🚨 文字や画像のドラッグでは止めない＝ふだんの操作を1つも壊さない。
       function isFileDrag(e) {
@@ -452,10 +455,11 @@
         return false;
       }
       function showHint() {
+        var hint = hintEl();
         if (!hint) return;
         hint.classList.add('show');
         if (hintTimer) clearTimeout(hintTimer);
-        hintTimer = setTimeout(function () { hint.classList.remove('show'); hintTimer = null; }, 4000);
+        hintTimer = setTimeout(function () { var h = hintEl(); if (h) h.classList.remove('show'); hintTimer = null; }, 4000);
       }
       // capture 段（第3引数 true）＝どこに落ちても、ほかの処理より先に止める。
       ['dragenter', 'dragover'].forEach(function (ev) {
