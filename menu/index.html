@@ -107,6 +107,17 @@
   #back-btn:hover { background: rgba(255,255,255,.34); }
   #frame-title { font-size: 15px; font-weight: 800; }
   #app-frame { flex: 1 1 auto; width: 100%; border: none; background: #fff; }
+
+  /* (1720_/便19) フォルダを枠の外に落としたときの短い案内。
+     🚨 見た目に関わるのはこの1本だけ＝ふだんは display:none＝便18までと1ドット同じ画面。 */
+  #drop-hint {
+    display: none; position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%);
+    z-index: 99999; max-width: 92vw; padding: 14px 22px; border-radius: 12px;
+    background: rgba(30,30,40,.94); color: #fff; font-size: 15px; font-weight: 700;
+    box-shadow: 0 8px 28px rgba(0,0,0,.35); pointer-events: none; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  #drop-hint.show { display: block; }
 </style>
 </head>
 <body>
@@ -412,5 +423,56 @@
       document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
     })();
   </script>
+
+  <script>
+    // ================================================================================
+    // (1720_/便19・D-554) ブラウザがフォルダを勝手に開くのを止める（＝「無題」の窓を出さない）。
+    //   谷川さん逐語（2026-08-28）＝「どのPCでもできるようにつくれ！あと事務員PCに落とし込む作業なしでできるようにしろ」。
+    //   便18で入れた置き場は、机のアイコン → この紙 → はめ込んだダッシュボード という**入れ子**で開くと効かなかった。
+    //   いちばん外側のこの紙には横取り止めが1つも無く、枠から少しでも外れて落とすと
+    //   ブラウザがフォルダを開いて「無題」の窓が出ていた。
+    //
+    //   🚨 この紙の役目は **2つだけ**＝①ブラウザに開かせない ②どこへ落とせばよいか出す。
+    //      はめ込み画面（#app-frame）の**中**に落ちた分は、この紙では1つも受け取れない
+    //      （GAS は中身をさらに googleusercontent の枠に入れて出す＝公式仕様の二重 iframe）。
+    //      → 中に落ちた分は**中の画面**の担当（dashboard_js.html の受け口）。責務はここで切る。
+    //   🚨 外から中へファイルを渡す道は**作らない**（postMessage でファイルを送らない）。
+    //   🚨 #app-frame の中身・src の作り方・合言葉の扱いには1文字も触っていない。
+    //   🚨 ファイルは1バイトも読まない・どこにも送らない（案内を出すだけ）。
+    // ================================================================================
+    (function () {
+      var hint = document.getElementById('drop-hint');
+      var hintTimer = null;
+      // ドラッグしているものが「ファイル（フォルダを含む）」かどうか。
+      //   🚨 文字や画像のドラッグでは止めない＝ふだんの操作を1つも壊さない。
+      function isFileDrag(e) {
+        var t = e.dataTransfer && e.dataTransfer.types;
+        if (!t) return false;
+        for (var i = 0; i < t.length; i++) { if (t[i] === 'Files') return true; }
+        return false;
+      }
+      function showHint() {
+        if (!hint) return;
+        hint.classList.add('show');
+        if (hintTimer) clearTimeout(hintTimer);
+        hintTimer = setTimeout(function () { hint.classList.remove('show'); hintTimer = null; }, 4000);
+      }
+      // capture 段（第3引数 true）＝どこに落ちても、ほかの処理より先に止める。
+      ['dragenter', 'dragover'].forEach(function (ev) {
+        document.addEventListener(ev, function (e) {
+          if (!isFileDrag(e)) return;
+          e.preventDefault();                                  // これを止めないとブラウザがファイルを開く（公式仕様）
+          if (e.dataTransfer) { try { e.dataTransfer.dropEffect = 'none'; } catch (_) {} }
+        }, true);
+      });
+      document.addEventListener('drop', function (e) {
+        if (!isFileDrag(e)) return;
+        e.preventDefault();                                    // 「無題」の窓を出さない
+        showHint();                                            // 落とし先を短く案内するだけ（読まない・送らない）
+      }, true);
+    })();
+  </script>
+
+  <div id="drop-hint" role="status" aria-live="polite">画面の中の点線の枠に落としてください</div>
 </body>
 </html>
