@@ -76,7 +76,7 @@
   </style>
 </head>
 <body>
-  <!-- ローディング画面（iframe ロード完了で fade-out・10 秒経過時の保険 setTimeout あり）-->
+  <!-- ローディング画面（iframe ロード完了で fade-out・60 秒経過時の保険 setTimeout あり）-->
   <div id="loading" role="status" aria-live="polite">
     <img src="sumire_icon_192x192.png" alt="Sumire+">
     <div class="spinner" aria-hidden="true"></div>
@@ -104,8 +104,9 @@
       if (iframe) {
         iframe.addEventListener('load', hideLoading);
       }
-      // 10 秒経過時の保険（iframe.onload 不発火対策・GAS 異常応答時にユーザーが永久に loading を見続けるのを防ぐ）
-      setTimeout(hideLoading, 10000);
+      // 60 秒経過時の保険（iframe.onload 不発火対策・GAS 異常応答時にユーザーが永久に loading を見続けるのを防ぐ）
+      // 🚨 1790_/便16：10 秒だと、電波が弱いときに中身が来る前に消えて「真っ青な画面」になる（実測 光回線でも1発目 8.2 秒）
+      setTimeout(hideLoading, 60000);
     })();
   </script>
 </body>
