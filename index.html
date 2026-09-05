@@ -94,6 +94,22 @@
     (function() {
       var loading = document.getElementById('loading');
       var iframe = document.querySelector('iframe');
+
+      // ── (1826_ 便B-5d・D-628) LINE ワークスの URL から来たときだけ、お知らせの番号を中へ渡す ──
+      //   🚨 <iframe src="…"> の字は1文字も変えない（そこは合言葉が入っている行・G-308／D-123）。
+      //   🚨 番号の形が合わないときは1文字も足さない（受け取った字をそのまま繋げない）。
+      //   🚨 番号が無いときは src に1回も代入しない＝いままでと1ドットも同じ（読み込みも1回のまま）。
+      //   🚨 中のページを1回 余分に頼むのは承知のうえ（D-628・費用0円）。
+      try {
+        var _osm = String(location.search || '').match(/[?&]os=([^&]*)/);
+        var _osv = _osm ? decodeURIComponent(_osm[1]) : '';
+        if (iframe && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(_osv)) {
+          var _base = iframe.getAttribute('src') || '';
+          if (_base) {
+            iframe.src = _base + (_base.indexOf('?') >= 0 ? '&' : '?') + 'os=' + encodeURIComponent(_osv);
+          }
+        }
+      } catch (e) {}
       var hidden = false;
       function hideLoading() {
         if (hidden) return;
