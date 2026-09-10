@@ -110,6 +110,21 @@
           }
         }
       } catch (e) {}
+
+      // ── (1896_ 便2) PC版メニューから来たときだけ、パソコン用の目印を中へ渡す ──
+      //   🚨 <iframe src="…"> の字は1文字も変えない（合言葉の行・G-308／D-123）。
+      //   🚨 'pc' 以外は1文字も足さない（受け取った字をそのまま繋げない）。
+      //   🚨 目印が無いときは src に1回も代入しない＝携帯はいままでと1ドットも同じ。
+      try {
+        var _vm = String(location.search || '').match(/[?&]view=([^&]*)/);
+        var _vv = _vm ? decodeURIComponent(_vm[1]) : '';
+        if (iframe && _vv === 'pc') {
+          var _vbase = iframe.getAttribute('src') || '';
+          if (_vbase) {
+            iframe.src = _vbase + (_vbase.indexOf('?') >= 0 ? '&' : '?') + 'view=pc';
+          }
+        }
+      } catch (e) {}
       var hidden = false;
       function hideLoading() {
         if (hidden) return;

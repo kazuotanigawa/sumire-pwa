@@ -147,11 +147,10 @@
           <div class="bar-cap" id="kd-cap" hidden></div>
           <div class="bar-wrap" id="kd-bar-wrap" hidden><div class="bar" id="kd-bar"></div></div>
         </button>
-        <div class="home-card soon" aria-disabled="true">
-          <span class="home-tag">準備中</span>
+        <button type="button" class="home-card act4" id="card-change">
           <div class="home-em">📝</div>
           <div class="home-nm">変更報告</div>
-        </div>
+        </button>
         <!-- (1275_/D-329) 5枚目＝職員名簿。4列グリッドの5枚目ゆえ自動で2段目の左端に出る。
              まねる相手は card-pc / card-monitor（押したら窓内にはめ込むだけの単純な形）。
              card-kaipoke は取込の状態表示（くるくる・横棒・postMessage）を持つ特別な作りゆえ まねない。 -->
@@ -200,6 +199,14 @@
     // 👥 職員名簿（1275_/D-329・振分け・モニターと同じ窓内はめ込み＝◀メニューで戻れる）
     document.getElementById('card-staff').addEventListener('click', function () {
       openInFrame('staff', '👥 職員名簿');
+    });
+    // 📝 変更報告（1896_/便2）＝外枠（../index.html）に「パソコン用」の目印を付けて窓内にはめ込む。
+    //   🚨 ここに住所も合言葉も書かない（合言葉は ../index.html が1箇所だけ持っている・G-308／D-123）。
+    document.getElementById('card-change').addEventListener('click', function () {
+      appFrame.src = '../index.html?view=pc';
+      frameTitle.textContent = '📝 変更報告';
+      menuScreen.style.display = 'none';
+      frameScreen.style.display = 'flex';
     });
     // ◀ メニューに戻る（iframe を止めてメニューへ）
     document.getElementById('back-btn').addEventListener('click', function () {
