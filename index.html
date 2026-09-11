@@ -125,6 +125,20 @@
           }
         }
       } catch (e) {}
+
+      // ── (1898_ 便A) PC版メニューから来たときだけ、変更報告をいきなり開く合図を中へ渡す ──
+      //   🚨 <iframe src="…"> の字は1文字も変えない（合言葉の行・G-308／D-123）。
+      //   🚨 'cr' 以外は1文字も足さない。無いときは src に1回も代入しない＝携帯は1ドットも同じ。
+      try {
+        var _gm = String(location.search || '').match(/[?&]go=([^&]*)/);
+        var _gv = _gm ? decodeURIComponent(_gm[1]) : '';
+        if (iframe && _gv === 'cr') {
+          var _gbase = iframe.getAttribute('src') || '';
+          if (_gbase) {
+            iframe.src = _gbase + (_gbase.indexOf('?') >= 0 ? '&' : '?') + 'go=cr';
+          }
+        }
+      } catch (e) {}
       var hidden = false;
       function hideLoading() {
         if (hidden) return;
