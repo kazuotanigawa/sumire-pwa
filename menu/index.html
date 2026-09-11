@@ -430,7 +430,8 @@
       document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
 
       // ================================================================================
-      // (1908_/便D) 【中から外へ声をかける道】＝窓の中の画面から「変更報告を出して」「メニューに戻して」だけを受ける。
+      // (1908_/便D ＋ 1911_/便E) 【中から外へ声をかける道】＝窓の中の画面から
+      //   「変更報告を出して」「メニューに戻して」だけを受ける。
       //   🚨 新しい動きは1つも作らない＝すでに在るボタンを押すだけ（#card-change ／ #back-btn）。
       //      openInFrame・card-change・back-btn の中身は1バイトも変えていない。
       //   🚨 ここに住所も合言葉も1文字も書かない（合言葉は ../index.html が1箇所だけ持っている・G-308／D-123）。
@@ -441,25 +442,15 @@
       //     ②中身がオブジェクト（null・配列・文字は捨てる）
       //     ③名札が sumire-nav（名札を先に見る＝上の onMsg と同じ作法）
       //     ④行き先が change-report か menu のどちらか（知らない値は捨てる）
-      //     ⑤いま窓に出しているページから来たもの（fromAppFrame_）＋窓が出ている
+      //     ⑤いま窓が出ている（メニューを見ているだけのときは何も起きない）
       //
-      //   🚨 ⑤が要る理由＝isGasOrigin は「Google の画面なら何でも」通す（script.google.com と *.googleusercontent.com）。
-      //      これだけだと、よその GAS の画面や、上の取込の状態を読む見えない小窓からでも通ってしまう。
-      //      → 送り主の窓が #app-frame の中のものかを確かめる。
-      //      🚨 GAS は中身をもう1枚の枠に入れて出す（公式仕様の二重 iframe）ので、
-      //         #app-frame そのものだけを見ると【正しい合図まで落ちる】＝1段 下まで見る。
+      //   🚨🚨 (1911_/便E) 「送り主の窓をたどる」守りは【置かない】。
+      //      理由＝Google は中身をさらに自分の枠に入れて出すので（D-628／D-678＝入れ子は4段）、
+      //            送り主が #app-frame の直接の子ではなく【孫】になり、正しい合図まで落ちる。
+      //      先に本番で動いている先例（D-325・上の onMsg）も、守りは出どころ（isGasOrigin）だけ。
+      //      ∴ ここも同じ水準にそろえる（新しい守りを発明しない・D-258）。
       //   🚨 z-index も覆いも60秒の保険も1つも触っていない（D-609／G-472）。
       // ================================================================================
-      function fromAppFrame_(src) {
-        try {
-          var w = appFrame && appFrame.contentWindow;
-          if (!w || !src) return false;
-          if (src === w) return true;
-          var fs = w.frames;                 // 別オリジンでも「本数」と「同じ窓か」は見られる（公式仕様）
-          for (var i = 0; i < fs.length; i++) { if (fs[i] === src) return true; }
-        } catch (e) {}
-        return false;
-      }
       window.addEventListener('message', function (ev) {
         if (!isGasOrigin(ev.origin)) return;                                   // ①
         var d = ev.data;
@@ -469,7 +460,6 @@
         // 窓が出ていないときは受けない（＝メニューを見ているだけのときは何も起きない）。
         //   🚨 出ていない状態は CSS 側（#frame-screen{display:none}）なので、いまの見た目で見る。
         if (getComputedStyle(frameScreen).display === 'none') return;
-        if (!fromAppFrame_(ev.source)) return;                                 // ⑤
         if (d.to === 'change-report') {
           // 🚨 いま既に変更報告を出しているなら何もしない
           //    ＝連打や 遅れて届いた合図で【入力中の画面が読み直される】のを防ぐ。
