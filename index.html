@@ -73,6 +73,28 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    /* ── (1963_/便31・D-730) はじめての1回だけ出る「パスワードを入れる画面」 ── */
+    #pin { position: fixed; inset: 0; z-index: 200; background: #e3f2fd; display: none;
+           flex-direction: column; justify-content: center; align-items: center; padding: 24px;
+           font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif; overflow-y: auto; }
+    #pin.show { display: flex; }
+    #pin .box { width: 100%; max-width: 340px; background: #fff; border-radius: 18px;
+                padding: 28px 22px 24px; box-shadow: 0 6px 24px rgba(17,153,142,.18); text-align: center; }
+    #pin .brand { font-size: 22px; font-weight: 700; color: #11998e; margin-bottom: 18px; letter-spacing: .04em; }
+    #pin .key { font-size: 40px; line-height: 1; margin-bottom: 14px; }
+    #pin h1 { font-size: 18px; color: #253046; margin-bottom: 8px; font-weight: 700; }
+    #pin .lead { font-size: 14px; color: #5b6785; line-height: 1.7; margin-bottom: 18px; }
+    #pin input { width: 100%; font-size: 26px; letter-spacing: 10px; text-align: center;
+                 padding: 12px 10px; border: 2px solid #b9c3da; border-radius: 10px;
+                 background: #fbfcff; color: #253046; font-weight: 700; }
+    #pin input:focus { outline: none; border-color: #11998e; }
+    #pin button { width: 100%; margin-top: 14px; padding: 14px; font-size: 16px; font-weight: 700;
+                  color: #fff; background: #11998e; border: none; border-radius: 10px; cursor: pointer; }
+    #pin button[disabled] { background: #9dc9c5; }
+    #pin .msg { min-height: 22px; margin-top: 12px; font-size: 14px; color: #b3261e;
+                font-weight: 700; line-height: 1.6; }
+    #pin .help { margin-top: 16px; font-size: 13px; color: #7b86a3; line-height: 1.6; }
   </style>
 </head>
 <body>
@@ -83,62 +105,91 @@
     <div class="text">読み込み中…</div>
   </div>
 
+  <!-- (1963_/便31・D-730) はじめての1回だけ出る画面。印を持っていれば1度も出ない。 -->
+  <div id="pin" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
+    <div class="box">
+      <div class="brand">Sumire+</div>
+      <div class="key" aria-hidden="true">🔑</div>
+      <h1 id="pinTitle">はじめての方へ</h1>
+      <p class="lead">パスワードを入力してください<br>（次からは聞かれません）</p>
+      <input id="pinInput" type="password" inputmode="numeric" autocomplete="off"
+             maxlength="6" aria-label="パスワード">
+      <button id="pinBtn" type="button">はじめる</button>
+      <div class="msg" id="pinMsg" role="alert" aria-live="assertive"></div>
+      <p class="help">パスワードが分からないときは谷川さんに聞いてください</p>
+    </div>
+  </div>
+
   <!-- V12 GAS Web App をフルスクリーン iframe で埋め込み -->
+  <!-- (1963_/便31・D-730) 合言葉（22文字）はこの行から外した。
+       中の画面の住所だけを data-exec に持ち、下の script で「その人の長い印」を付けて組み立てる。
+       🚨 src は空のまま＝印が無ければ1回も中を読みに行かない（パスワードを入れる画面だけが出る）。 -->
   <iframe
-    src="https://script.google.com/macros/s/AKfycbxku78k9q6s1VrAlLCRJBHsQsz7tOiTHyqCyE1_HiLtoU6PdPEpP_TeVUp6QucLTkrfCQ/exec?t=QN6SEjv_LcZq3cnIwyAmBQ"
+    data-exec="https://script.google.com/macros/s/AKfycbxku78k9q6s1VrAlLCRJBHsQsz7tOiTHyqCyE1_HiLtoU6PdPEpP_TeVUp6QucLTkrfCQ/exec"
     allow="camera; microphone; fullscreen"
     allowfullscreen>
   </iframe>
 
   <script>
     (function() {
-      var loading = document.getElementById('loading');
-      var iframe = document.querySelector('iframe');
+      var loading  = document.getElementById('loading');
+      var iframe   = document.querySelector('iframe');
+      var pinWrap  = document.getElementById('pin');
+      var pinInput = document.getElementById('pinInput');
+      var pinBtn   = document.getElementById('pinBtn');
+      var pinMsg   = document.getElementById('pinMsg');
 
-      // ── (1826_ 便B-5d・D-628) LINE ワークスの URL から来たときだけ、お知らせの番号を中へ渡す ──
-      //   🚨 <iframe src="…"> の字は1文字も変えない（そこは合言葉が入っている行・G-308／D-123）。
-      //   🚨 番号の形が合わないときは1文字も足さない（受け取った字をそのまま繋げない）。
-      //   🚨 番号が無いときは src に1回も代入しない＝いままでと1ドットも同じ（読み込みも1回のまま）。
-      //   🚨 中のページを1回 余分に頼むのは承知のうえ（D-628・費用0円）。
-      try {
-        var _osm = String(location.search || '').match(/[?&]os=([^&]*)/);
-        var _osv = _osm ? decodeURIComponent(_osm[1]) : '';
-        if (iframe && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(_osv)) {
-          var _base = iframe.getAttribute('src') || '';
-          if (_base) {
-            iframe.src = _base + (_base.indexOf('?') >= 0 ? '&' : '?') + 'os=' + encodeURIComponent(_osv);
-          }
-        }
-      } catch (e) {}
+      // (1963_/便31・D-730) 中の画面の住所。🚨 合言葉（22文字）はこのページから外した。
+      var EXEC = (iframe && iframe.getAttribute('data-exec')) || '';
 
-      // ── (1896_ 便2) PC版メニューから来たときだけ、パソコン用の目印を中へ渡す ──
-      //   🚨 <iframe src="…"> の字は1文字も変えない（合言葉の行・G-308／D-123）。
-      //   🚨 'pc' 以外は1文字も足さない（受け取った字をそのまま繋げない）。
-      //   🚨 目印が無いときは src に1回も代入しない＝携帯はいままでと1ドットも同じ。
-      try {
-        var _vm = String(location.search || '').match(/[?&]view=([^&]*)/);
-        var _vv = _vm ? decodeURIComponent(_vm[1]) : '';
-        if (iframe && _vv === 'pc') {
-          var _vbase = iframe.getAttribute('src') || '';
-          if (_vbase) {
-            iframe.src = _vbase + (_vbase.indexOf('?') >= 0 ? '&' : '?') + 'view=pc';
-          }
-        }
-      } catch (e) {}
+      // 覚えておく2つ。🚨 これ以外は1バイトも覚えさせない（利用者の情報は1文字も置かない・387_）。
+      var LS_TK  = 'sumire_tk';    // その人の長い印（パスワードそのものではない）
+      var LS_DEV = 'sumire_dev';   // その携帯の印（間違い回数を数えるためだけ・個人情報ゼロ）
 
-      // ── (1898_ 便A) PC版メニューから来たときだけ、変更報告をいきなり開く合図を中へ渡す ──
-      //   🚨 <iframe src="…"> の字は1文字も変えない（合言葉の行・G-308／D-123）。
-      //   🚨 'cr' 以外は1文字も足さない。無いときは src に1回も代入しない＝携帯は1ドットも同じ。
-      try {
-        var _gm = String(location.search || '').match(/[?&]go=([^&]*)/);
-        var _gv = _gm ? decodeURIComponent(_gm[1]) : '';
-        if (iframe && _gv === 'cr') {
-          var _gbase = iframe.getAttribute('src') || '';
-          if (_gbase) {
-            iframe.src = _gbase + (_gbase.indexOf('?') >= 0 ? '&' : '?') + 'go=cr';
+      function lsGet(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
+      function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+      /** その携帯の印（無ければ作って覚える）。★Google 側の決まり [A-Za-z0-9_-]{8,64} に合わせる。 */
+      function deviceId() {
+        var d = lsGet(LS_DEV);
+        if (/^[A-Za-z0-9_-]{8,64}$/.test(d)) return d;
+        var s = '';
+        try {
+          var a = new Uint8Array(16);
+          (window.crypto || window.msCrypto).getRandomValues(a);
+          for (var i = 0; i < a.length; i++) { s += ('0' + a[i].toString(16)).slice(-2); }
+        } catch (e) { s = ''; }
+        if (s.length < 8) { s = 'd' + String(Date.now()) + String(Math.floor(Math.random() * 1e9)); }
+        s = s.substring(0, 64);
+        lsSet(LS_DEV, s);
+        return s;
+      }
+
+      // ── 中へ渡す追加の合図（os / view / go）──
+      //   🚨 中身の決まりは 1826_／1896_／1898_ から1文字も変えていない＝形が合わないものは1文字も足さない。
+      //   🚨 変えたのは「src に代入して読み直させる」のをやめて、組み立ててから1回だけ入れる形にしたところだけ。
+      function extraParams() {
+        var q = '';
+        try {
+          var m = String(location.search || '').match(/[?&]os=([^&]*)/);
+          var v = m ? decodeURIComponent(m[1]) : '';
+          if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v)) {
+            q += '&os=' + encodeURIComponent(v);
           }
-        }
-      } catch (e) {}
+        } catch (e) {}
+        try {
+          var m2 = String(location.search || '').match(/[?&]view=([^&]*)/);
+          var v2 = m2 ? decodeURIComponent(m2[1]) : '';
+          if (v2 === 'pc') { q += '&view=pc'; }
+        } catch (e) {}
+        try {
+          var m3 = String(location.search || '').match(/[?&]go=([^&]*)/);
+          var v3 = m3 ? decodeURIComponent(m3[1]) : '';
+          if (v3 === 'cr') { q += '&go=cr'; }
+        } catch (e) {}
+        return q;
+      }
+
       var hidden = false;
       function hideLoading() {
         if (hidden) return;
@@ -146,12 +197,90 @@
         loading.classList.add('hide');
         setTimeout(function() { loading.style.display = 'none'; }, 350);
       }
-      if (iframe) {
+
+      /** 印を持って中の画面を開く（★ここで初めて中を読みに行く＝読み込みは1回だけ）。 */
+      function openApp(tk) {
+        if (!iframe || !EXEC || !tk) return;
         iframe.addEventListener('load', hideLoading);
+        // 60 秒経過時の保険（iframe.onload 不発火対策・GAS 異常応答時にユーザーが永久に loading を見続けるのを防ぐ）
+        // 🚨 1790_/便16：10 秒だと、電波が弱いときに中身が来る前に消えて「真っ青な画面」になる（実測 光回線でも1発目 8.2 秒）
+        setTimeout(hideLoading, 60000);
+        iframe.src = EXEC + '?t=' + encodeURIComponent(tk) + extraParams();
       }
-      // 60 秒経過時の保険（iframe.onload 不発火対策・GAS 異常応答時にユーザーが永久に loading を見続けるのを防ぐ）
-      // 🚨 1790_/便16：10 秒だと、電波が弱いときに中身が来る前に消えて「真っ青な画面」になる（実測 光回線でも1発目 8.2 秒）
-      setTimeout(hideLoading, 60000);
+
+      function showPin() {
+        loading.style.display = 'none';
+        hidden = true;
+        pinWrap.classList.add('show');
+        try { pinInput.focus(); } catch (e) {}
+      }
+
+      function askAgain() {
+        // 入れ直しの逃げ道（?repin=1）＝止められた人に配り直したときに、詰まないようにする。
+        return /[?&]repin=1/.test(String(location.search || ''));
+      }
+
+      function submitPin() {
+        var pin = String(pinInput.value || '').replace(/[^0-9]/g, '');
+        pinMsg.textContent = '';
+        if (pin.length !== 6) {
+          pinMsg.textContent = 'パスワードは6桁の数字です。';
+          return;
+        }
+        pinBtn.disabled = true;
+        pinBtn.textContent = '確認中…';
+
+        var url = EXEC + '?pinauth=1&pin=' + encodeURIComponent(pin) +
+                  '&dev=' + encodeURIComponent(deviceId());
+
+        fetch(url, { method: 'GET' })
+          .then(function (r) { return r.json(); })
+          .then(function (j) {
+            if (j && j.ok === true && j.tk) {
+              lsSet(LS_TK, String(j.tk));
+              pinInput.value = '';
+              pinWrap.classList.remove('show');
+              hidden = false;
+              loading.style.display = '';
+              loading.classList.remove('hide');
+              openApp(String(j.tk));
+              return;
+            }
+            var code = (j && j.code) || '';
+            var left = (j && typeof j.left === 'number') ? j.left : -1;
+            if (code === 'LOCKED' || (code === 'BAD_PIN' && left <= 0)) {
+              pinMsg.textContent = '5回 まちがえました。15分ほどたってからもう一度お試しください。';
+            } else if (code === 'OFF') {
+              pinMsg.textContent = '⚠️ エラーコード 1004　谷川さんに連絡してください。';
+            } else if (code === 'BAD_PIN') {
+              pinMsg.textContent = 'パスワードがちがいます（あと ' + left + ' 回）';
+            } else {
+              pinMsg.textContent = '⚠️ エラーコード 1004　谷川さんに連絡してください。';
+            }
+            pinInput.value = '';
+            pinBtn.disabled = false;
+            pinBtn.textContent = 'はじめる';
+            try { pinInput.focus(); } catch (e) {}
+          })
+          .catch(function () {
+            pinMsg.textContent = 'つながりませんでした。電波の良いところでもう一度お試しください。（⚠️ エラーコード 1005）';
+            pinBtn.disabled = false;
+            pinBtn.textContent = 'はじめる';
+          });
+      }
+
+      pinBtn.addEventListener('click', submitPin);
+      pinInput.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') { ev.preventDefault(); submitPin(); }
+      });
+
+      // ── ここが入口 ──
+      var tk = lsGet(LS_TK);
+      if (tk && !askAgain()) {
+        openApp(tk);        // 2回目から＝何も聞かれない（いままでと同じ）
+      } else {
+        showPin();          // はじめての1回だけ
+      }
     })();
   </script>
 </body>
