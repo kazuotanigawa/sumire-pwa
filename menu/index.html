@@ -431,9 +431,9 @@
 
       // ================================================================================
       // (1908_/便D ＋ 1911_/便E) 【中から外へ声をかける道】＝窓の中の画面から
-      //   「変更報告を出して」「メニューに戻して」だけを受ける。
-      //   🚨 新しい動きは1つも作らない＝すでに在るボタンを押すだけ（#card-change ／ #back-btn）。
-      //      openInFrame・card-change・back-btn の中身は1バイトも変えていない。
+      //   「変更報告を出して」「メニューに戻して」「振分けダッシュボードを出して」だけを受ける。
+      //   🚨 新しい動きは1つも作らない＝すでに在るボタンを押すだけ（#card-change ／ #back-btn ／ #card-pc）。
+      //      openInFrame・card-change・back-btn・card-pc の中身は1バイトも変えていない。
       //   🚨 ここに住所も合言葉も1文字も書かない（合言葉は ../index.html が1箇所だけ持っている・G-308／D-123）。
       //   🚨 上の「カイポケ取込」の受け口（onMsg）は1バイトも触っていない＝別物（取込の状態表示用）。
       //
@@ -441,7 +441,7 @@
       //     ①送り主が Google の画面（isGasOrigin＝いま在る判定をそのまま使う・新しい判定を作らない）
       //     ②中身がオブジェクト（null・配列・文字は捨てる）
       //     ③名札が sumire-nav（名札を先に見る＝上の onMsg と同じ作法）
-      //     ④行き先が change-report か menu のどちらか（知らない値は捨てる）
+      //     ④行き先が change-report か menu か dashboard のどれか（知らない値は捨てる）
       //     ⑤いま窓が出ている（メニューを見ているだけのときは何も起きない）
       //
       //   🚨🚨 (1911_/便E) 「送り主の窓をたどる」守りは【置かない】。
@@ -456,7 +456,7 @@
         var d = ev.data;
         if (!d || typeof d !== 'object' || Array.isArray(d)) return;           // ②
         if (d.type !== 'sumire-nav') return;                                   // ③
-        if (d.to !== 'change-report' && d.to !== 'menu') return;               // ④
+        if (d.to !== 'change-report' && d.to !== 'menu' && d.to !== 'dashboard') return;  // ④
         // 窓が出ていないときは受けない（＝メニューを見ているだけのときは何も起きない）。
         //   🚨 出ていない状態は CSS 側（#frame-screen{display:none}）なので、いまの見た目で見る。
         if (getComputedStyle(frameScreen).display === 'none') return;
@@ -465,6 +465,13 @@
           //    ＝連打や 遅れて届いた合図で【入力中の画面が読み直される】のを防ぐ。
           if (frameTitle.textContent === '📝 変更報告') return;
           document.getElementById('card-change').click();
+        } else if (d.to === 'dashboard') {
+          // (1982_/便40) 📦 振分けダッシュボードを出す。
+          //   🚨 新しい動きは1つも作らない＝すでに在るボタン（#card-pc）を押すだけ。
+          //   🚨 いま既に振分けダッシュボードを出しているなら何もしない
+          //      ＝上の change-report の枝とまったく同じ作法（連打・遅れて届いた合図で読み直さない）。
+          if (frameTitle.textContent === '📦 振分けダッシュボード') return;
+          document.getElementById('card-pc').click();
         } else {
           document.getElementById('back-btn').click();
         }
