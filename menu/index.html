@@ -107,6 +107,9 @@
   #back-btn:hover { background: rgba(255,255,255,.34); }
   #frame-title { font-size: 15px; font-weight: 800; }
   #app-frame { flex: 1 1 auto; width: 100%; border: none; background: #fff; }
+  /* (2006_/便2) 画面ごとに持ち続ける窓。#app-frame と同じ見た目にそろえる（新しい見た目を作っていない）。
+     🚨 隠し方は display:none の1通りだけ（JS 側でしか付け外ししない）。 */
+  .app-pane { flex: 1 1 auto; width: 100%; border: none; background: #fff; }
 
   /* (1720_/便19) フォルダを枠の外に落としたときの短い案内。
      🚨 見た目に関わるのはこの1本だけ＝ふだんは display:none＝便18までと1ドット同じ画面。 */
@@ -173,6 +176,16 @@
   </div>
 
   <script>
+    // ================================================================================
+    // (2006_/便2) 外枠の札＝画面ごとに窓を持ち続けるかどうか。
+    //   false（切）＝着手前とまったく同じ動き（窓は1つ・◀ メニューで止める）。
+    //   true （入）＝下の SHELL_KEEP_ に載っている画面だけ窓を持ち続け、
+    //               切り替えは「出す／隠す」だけにする＝2回目からの行き来が一瞬になる。
+    //   🚨 入にする前に、中身の札（DASH_REFRESH_ON_SHOW）を先に入にしておくこと（2000_ §2-6）。
+    //      〈外枠＝入／中身＝切〉は【古い一覧が出たままになる】ので1秒も作らない。
+    // ================================================================================
+    var SHELL_MULTI_FRAME = false;
+
     // 振分けダッシュボードの本番 Web アプリ URL（GAS exec・誰でもアクセス可=D-083 ALLOWALL・Box認証が壁・秘密値なし）
     var EXEC = 'https://script.google.com/macros/s/AKfycbx0ipQO6w4GhQQVAfuHyoeF5SeGcVg1gGZZHOwvhpG4oeRio2W0VpFENJLvnixeJdee/exec';
 
@@ -181,9 +194,85 @@
     var appFrame = document.getElementById('app-frame');
     var frameTitle = document.getElementById('frame-title');
 
+    // ================================================================================
+    // (2006_/便2) 窓を画面ごとに持ち、切り替えは「出す／隠す」だけにする。
+    //   持ち続けるのは SHELL_KEEP_ に載っている画面だけ（下の注を見よ）。
+    //   載っていない画面は【今までどおり開き直す】（＝#app-frame を使い回す）。
+    //   🚨 窓は初めてその画面を開いたときに作る。2回目からは作らず、出す／隠すだけ。
+    //   🚨 一度 置いた窓は DOM の中で動かさない（動かすと読み直しになる）。
+    //   🚨 隠し方は display:none の1通りだけ。
+    // ================================================================================
+    // 🚨🚨 (2006_/便2) 持ち続けるのは【📦 振分けダッシュボードだけ】。
+    //    📝 変更報告は**この便では持ち続けない**＝2026-09-17 の実測（1919_ 場面⑬）で、
+    //    中の「← メニューに戻る」を押して 0.7秒より前に戻ると、**見ている前で画面が片付く**ことが分かったため
+    //    （2006_ §6 #15 の合格の線に届かない）。指示文の決めどおり「消さない」を優先して倒した。
+    //    🚨 元に戻すのは1語だけ＝`change: 1` を足す（作りも検査も そのまま残してある）。
+    var SHELL_KEEP_ = { pc: 1 };
+    var shellPanes_ = {};                     // 見分け → 窓（SHELL_KEEP_ に載っている画面だけ入る）
+    var shellCur_ = '';                       // いま出している窓の見分け
+
+    function shellShowPane_(view, src) {
+      // 出たままの連打では何もしない（＝読み直さない）。使い捨ての窓は今までどおり読み直す。
+      if (shellCur_ === view && SHELL_KEEP_[view]) return;
+      // いま出ている窓をしまう。使い捨ての窓（SHELL_KEEP_ に載っていない画面）は今までどおり【止める】。
+      if (shellCur_ && !SHELL_KEEP_[shellCur_]) appFrame.src = '';
+      appFrame.style.display = 'none';
+      for (var k in shellPanes_) { if (shellPanes_[k]) shellPanes_[k].style.display = 'none'; }
+      if (SHELL_KEEP_[view]) {
+        var f = shellPanes_[view];
+        if (!f) {                                   // 🚨 作るのは初めての1回だけ
+          f = document.createElement('iframe');
+          f.className = 'app-pane';
+          f.setAttribute('allow', 'fullscreen');
+          f.setAttribute('allowfullscreen', '');
+          shellPanes_[view] = f;
+          frameScreen.appendChild(f);               // 🚨 置くのも1回だけ・二度と動かさない
+          f.src = src;                              // 🚨 読み先を入れるのも1回だけ
+        }
+        f.style.display = 'block';
+      } else {
+        appFrame.style.display = 'block';
+        appFrame.src = src;                         // 使い捨ての窓は今までどおり毎回 読み直す
+      }
+      shellCur_ = view;
+    }
+
+    // 🚨 (2006_/便2) 送り主が【隠れている窓】だと確かに分かったときだけ true を返す。
+    //   見分け方＝送り主の窓から親を上へたどり、隠れている窓の中身の窓と同じものかを比べる
+    //     （公式＝event.source と iframe.contentWindow を比べて送り主の窓を見分ける／
+    //      入れ子なら event.source.parent を比べる・MDN・2026-09-17 確認）。
+    //   🚨🚨 分からなかったら【通す】＝正しい合図が落ちる道を1つも増やさない（D-693 の再発防止）。
+    //      1911_／便E が棄却したのは「1段だけ比べて、孫から来た正しい合図まで落ちる」やり方（D-628／D-678）。
+    //   🚨 たどる回数の上限6は「打ち切りの上限」ではない（D-396）＝輪になって止まらなくなるのを防ぐ数。
+    //   🚨 窓の中の【紙】には1文字も触らない（別の出どころの紙を読むと例外になる）＝窓どうしを比べるだけ。
+    function fromHiddenPane_(ev) {
+      var hidden = [];
+      for (var k in shellPanes_) {
+        var f = shellPanes_[k];
+        if (f && f.style.display === 'none') hidden.push(f);
+      }
+      if (!hidden.length) return false;                      // 隠れている窓が無い＝通す
+      var w = ev.source;
+      for (var i = 0; i < 6 && w; i++) {
+        for (var j = 0; j < hidden.length; j++) {
+          if (hidden[j].contentWindow === w) return true;    // 隠れている窓だと確かに分かった
+        }
+        var p = null;
+        try { p = w.parent; } catch (e) { return false; }    // 分からない＝通す
+        if (!p || p === w) return false;                     // これ以上たどれない＝通す
+        w = p;
+      }
+      return false;                                          // たどり切れなかった＝通す
+    }
+
     // 各機能をアプリ窓の中に全画面ではめ込む（振分け・モニターとも ALLOWALL ＝埋め込み可）
+    //   🚨 窓を出し入れする共通の道は【この1本だけ】（G-738＝2か所に書かない）。
+    //   🚨 札が切のときは、着手前とまったく同じ動き（#app-frame の行き先を書き換えるだけ）。
+    //   🚨 読み先の作り方は1文字も変えていない。合言葉はここに1文字も書かない
+    //      （合言葉は ../index.html が1箇所だけ持っている・G-308／D-123）。
     function openInFrame(view, title) {
-      appFrame.src = EXEC + '?view=' + view;
+      var src = (view === 'change') ? '../index.html?view=pc&go=cr' : (EXEC + '?view=' + view);
+      if (SHELL_MULTI_FRAME) shellShowPane_(view, src); else appFrame.src = src;
       frameTitle.textContent = title;
       menuScreen.style.display = 'none';
       frameScreen.style.display = 'flex';
@@ -202,13 +291,14 @@
     });
     // 📝 変更報告（1896_/便2）＝外枠（../index.html）に「パソコン用」の目印を付けて窓内にはめ込む。
     //   🚨 ここに住所も合言葉も書かない（合言葉は ../index.html が1箇所だけ持っている・G-308／D-123）。
+    //   (2006_/便2) 共通の道（openInFrame）を通す＝読み先の字は1文字も変えていない。
     document.getElementById('card-change').addEventListener('click', function () {
-      appFrame.src = '../index.html?view=pc&go=cr';
-      frameTitle.textContent = '📝 変更報告';
-      menuScreen.style.display = 'none';
-      frameScreen.style.display = 'flex';
+      openInFrame('change', '📝 変更報告');
     });
     // ◀ メニューに戻る（iframe を止めてメニューへ）
+    //   🚨 (2006_/便2) ここは【1バイトも変えていない】。持ち続ける窓は #app-frame とは別の窓なので、
+    //      この行で止まるのは今までどおり「使い捨ての窓（📊／👥、札が切なら4枚とも）」だけ。
+    //      ＝持ち続ける窓を止めない決まりは、作りそのもので満たされている（余分な分かれ道を足さない）。
     document.getElementById('back-btn').addEventListener('click', function () {
       frameScreen.style.display = 'none';
       menuScreen.style.display = 'flex';
@@ -460,6 +550,10 @@
         // 窓が出ていないときは受けない（＝メニューを見ているだけのときは何も起きない）。
         //   🚨 出ていない状態は CSS 側（#frame-screen{display:none}）なので、いまの見た目で見る。
         if (getComputedStyle(frameScreen).display === 'none') return;
+        // 🚨 (2006_/便2) 6つ目＝【隠れている窓】からの合図だけを捨てる。
+        //   通す5条件（①〜⑤）は1バイトも変えていない（D-690／D-693／D-701／D-740）。
+        //   分からなかったら【通す】＝正しい合図が落ちる道を1つも増やさない（fromHiddenPane_ を見よ）。
+        if (SHELL_MULTI_FRAME && fromHiddenPane_(ev)) return;                  // ⑥
         if (d.to === 'change-report') {
           // 🚨 いま既に変更報告を出しているなら何もしない
           //    ＝連打や 遅れて届いた合図で【入力中の画面が読み直される】のを防ぐ。
