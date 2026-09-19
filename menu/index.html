@@ -213,7 +213,13 @@
     //    🚨 足すのは `change: 1` の1語だけ＝ほかは1バイトも変えていない。
     //    🚨 相方＝画面側の札 `CR_REFRESH_ON_SHOW`（forms_pwa）。**あちらが入でないとここを入れない**
     //       ＝持ち続けたまま取り直さないと、利用者の一覧が古いまま固定される。
-    var SHELL_KEEP_ = { pc: 1, change: 1 };
+    // 🚨🚨 (2087_/便AR・2026-09-20) その1語を足した＝**📥 変更内容入力も持ち続ける**。
+    //    谷川さん明示「変更内容入力画面もボタンをおしたら2回目からはすぐ開くように。
+    //    またダッシュボードに戻るときもダッシュボードがすぐ開くようにしろ。やり方は変更画面の時と一緒」。
+    //    🚨 足すのは `entry: 1` の1語だけ＝ほかは1バイトも変えていない（📦 と 📝 の動きは不変）。
+    //    🚨 相方＝画面側の札 `DASH_REFRESH_ON_SHOW`（forms）。**あちらが入でないとここが効いても古いまま見える**
+    //       ＝change_entry.html は出された瞬間に自分で取り直す（あちらの札を読むだけ）。
+    var SHELL_KEEP_ = { pc: 1, change: 1, entry: 1 };
     var shellPanes_ = {};                     // 見分け → 窓（SHELL_KEEP_ に載っている画面だけ入る）
     var shellCur_ = '';                       // いま出している窓の見分け
 
@@ -277,7 +283,11 @@
     //   🚨 読み先の作り方は1文字も変えていない。合言葉はここに1文字も書かない
     //      （合言葉は ../index.html が1箇所だけ持っている・G-308／D-123）。
     function openInFrame(view, title) {
-      var src = (view === 'change') ? '../index.html?view=pc&go=cr' : (EXEC + '?view=' + view);
+      // 🆕 (2087_/便AR) 📥 変更内容入力＝窓の見分けは 'entry'／GAS に渡す名前は 'todo'（食い違うので1行だけ分ける）。
+      //   🚨 住所も合言葉もここに1文字も書かない＝EXEC をそのまま使う（G-308／D-123）。
+      var src = (view === 'change') ? '../index.html?view=pc&go=cr'
+              : (view === 'entry')  ? (EXEC + '?view=todo')
+              : (EXEC + '?view=' + view);
       if (SHELL_MULTI_FRAME) shellShowPane_(view, src); else appFrame.src = src;
       frameTitle.textContent = title;
       menuScreen.style.display = 'none';
@@ -552,7 +562,7 @@
         var d = ev.data;
         if (!d || typeof d !== 'object' || Array.isArray(d)) return;           // ②
         if (d.type !== 'sumire-nav') return;                                   // ③
-        if (d.to !== 'change-report' && d.to !== 'menu' && d.to !== 'dashboard') return;  // ④
+        if (d.to !== 'change-report' && d.to !== 'menu' && d.to !== 'dashboard' && d.to !== 'change-entry') return;  // ④（2087_/便AR で change-entry を1つ足した）
         // 窓が出ていないときは受けない（＝メニューを見ているだけのときは何も起きない）。
         //   🚨 出ていない状態は CSS 側（#frame-screen{display:none}）なので、いまの見た目で見る。
         if (getComputedStyle(frameScreen).display === 'none') return;
@@ -572,6 +582,14 @@
           //      ＝上の change-report の枝とまったく同じ作法（連打・遅れて届いた合図で読み直さない）。
           if (frameTitle.textContent === '📦 振分けダッシュボード') return;
           document.getElementById('card-pc').click();
+        } else if (d.to === 'change-entry') {
+          // 🆕 (2087_/便AR・D-805) 📥 変更内容入力を出す。
+          //   🚨 上の change-report／dashboard の枝とまったく同じ作法
+          //      ＝いま既に出しているなら何もしない（連打・遅れて届いた合図で読み直さない）。
+          //   🚨 差し込む場所は【else if の連鎖の中】＝最後の else の後ろに置くと
+          //      届いた合図が黙って「メニューに戻る」に化ける。
+          if (frameTitle.textContent === '📥 変更内容入力') return;
+          openInFrame('entry', '📥 変更内容入力');
         } else {
           document.getElementById('back-btn').click();
         }
