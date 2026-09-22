@@ -8,19 +8,19 @@
 <style>
   :root{
     --ink:#1a1a1a; --sub:#555; --line:#dcdcdc;
-    --purple:#5b3fb0; --amber:#ef6c00;
+    --purple:#5b3fb0; --amber:#ef6c00; --red:#c62828;
     --bg:#ffffff; --box:#f4f7f8;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
       --ink:#f0f0f0; --sub:#bdbdbd; --line:#3a3a3a;
-      --purple:#b39ddb; --amber:#ffb74d;
+      --purple:#b39ddb; --amber:#ffb74d; --red:#ff8a80;
       --bg:#141617; --box:#1e2224;
     }
   }
   :root[data-theme="dark"]{
     --ink:#f0f0f0; --sub:#bdbdbd; --line:#3a3a3a;
-    --purple:#b39ddb; --amber:#ffb74d;
+    --purple:#b39ddb; --amber:#ffb74d; --red:#ff8a80;
     --bg:#141617; --box:#1e2224;
   }
   *{box-sizing:border-box;}
@@ -53,6 +53,20 @@
     padding:12px 14px; margin:16px 0; font-size:16px; border-radius:0 6px 6px 0;
   }
   .big{font-size:18px; font-weight:700;}
+  h3{font-size:17px; margin:22px 0 8px; padding-left:10px; border-left:5px solid var(--purple);}
+  .stop{
+    border:3px solid var(--red); border-radius:10px;
+    padding:14px 16px; margin:20px 0; background:var(--box);
+  }
+  .stop h3{margin:0 0 10px; font-size:19px; color:var(--red); border:0; padding:0;}
+  .stop p{margin:0 0 10px;}
+  .stop p:last-child{margin-bottom:0;}
+  .addr{
+    display:inline-block; margin-top:6px; padding:8px 10px;
+    background:var(--box); border:1px solid var(--line); border-radius:6px;
+    font-family:"SFMono-Regular",Consolas,Menlo,monospace; font-size:14px;
+    word-break:break-all; line-height:1.6;
+  }
   .know{border:2px solid var(--line); border-radius:10px; padding:14px 16px; margin:16px 0;}
   .know p{margin:0 0 12px;}
   .know p:last-child{margin-bottom:0;}
@@ -75,13 +89,28 @@
   <div class="row"><span class="lbl">6桁のパスワード</span><span class="line">&nbsp;</span></div>
 </div>
 
-<h2>1. まず、下のボタンを押して開きます</h2>
+<h2>1. まず、Safari（Android は Chrome）で開きます</h2>
+
+<div class="stop">
+  <h3>かならず Safari から開いてください</h3>
+  <p><span class="big">LINE や LINE ワークスの中から開くと、ホーム画面に追加できません。</span></p>
+  <p>この文を <b>LINE や LINE ワークスで読んでいる方</b>は、
+     <b>下のやり方で、あらためて Safari（Chrome）から開いてください。</b></p>
+</div>
+
+<h3>開き方</h3>
+<ol>
+  <li><b>iPhone の方</b>　…　<b>Safari</b> を自分で開く<br>
+      <b>Android の方</b>　…　<b>Chrome</b> を自分で開く</li>
+  <li>いちばん上のアドレス欄に、下のアドレスを打つ（この文からコピーして貼ってもよい）<br>
+      <span class="addr">https://kazuotanigawa.github.io/sumire-pwa/</span></li>
+</ol>
+
+<div class="note">
+  <b>いま この文を Safari（Chrome）で読んでいる方</b>は、下のボタンでそのまま開けます。
+</div>
 
 <a class="open" href="../">Sumire+ を開く</a>
-
-<ol>
-  <li><b>iPhone の方</b>は <b>Safari</b> で、<b>Android の方</b>は <b>Chrome</b> で開いてください。</li>
-</ol>
 
 <div class="note">
   <b>開くのに 8〜9秒かかることがあります。</b><br>
