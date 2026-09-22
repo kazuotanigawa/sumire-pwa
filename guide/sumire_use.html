@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Sumire+ の使い方</title>
+<style>
+  :root{
+    --ink:#1a1a1a; --sub:#555; --line:#dcdcdc;
+    --purple:#5b3fb0; --red:#c62828; --amber:#ef6c00;
+    --bg:#ffffff; --box:#f4f7f8;
+    --c-shoot:#11998e; --c-report:#5b3fb0; --c-sched:#ef6c00; --c-notice:#c2185b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#f0f0f0; --sub:#bdbdbd; --line:#3a3a3a;
+      --purple:#b39ddb; --red:#ff8a80; --amber:#ffb74d;
+      --bg:#141617; --box:#1e2224;
+      --c-shoot:#2ec4b6; --c-report:#b39ddb; --c-sched:#ffb74d; --c-notice:#f48fb1;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#f0f0f0; --sub:#bdbdbd; --line:#3a3a3a;
+    --purple:#b39ddb; --red:#ff8a80; --amber:#ffb74d;
+    --bg:#141617; --box:#1e2224;
+    --c-shoot:#2ec4b6; --c-report:#b39ddb; --c-sched:#ffb74d; --c-notice:#f48fb1;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:20px 16px 40px; background:var(--bg); color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic","Meiryo",sans-serif;
+    font-size:17px; line-height:1.85; -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:640px; margin:0 auto;}
+  h1{
+    font-size:23px; margin:0 0 6px; padding-bottom:10px;
+    border-bottom:4px solid var(--purple); line-height:1.4;
+  }
+  .lead{font-size:15px; color:var(--sub); margin:0 0 22px;}
+  h2{
+    font-size:19px; margin:30px 0 12px; padding:8px 14px;
+    background:var(--purple); color:#fff; border-radius:6px; line-height:1.5;
+  }
+  h2.shoot{background:var(--c-shoot);}
+  h2.report{background:var(--c-report);}
+  h2.sched{background:var(--c-sched);}
+  h2.notice{background:var(--c-notice);}
+  h3{font-size:17px; margin:20px 0 8px; padding-left:10px; border-left:5px solid var(--purple);}
+  ol,ul{margin:0 0 0 1.2em; padding:0;}
+  li{margin:0 0 10px;}
+  .menu{border:2px solid var(--line); border-radius:10px; padding:6px 14px; margin:16px 0;}
+  .menu div{padding:8px 0; border-bottom:1px solid var(--line); font-size:17px;}
+  .menu div:last-child{border-bottom:0;}
+  .note{
+    border-left:6px solid var(--amber); background:var(--box);
+    padding:12px 14px; margin:16px 0; font-size:16px; border-radius:0 6px 6px 0;
+  }
+  .big{font-size:18px; font-weight:700;}
+  .ng{font-weight:700; color:var(--red);}
+  .know{border:2px solid var(--line); border-radius:10px; padding:14px 16px; margin:16px 0;}
+  .know p{margin:0 0 12px;}
+  .know p:last-child{margin-bottom:0;}
+  .stop{
+    border:3px solid var(--red); border-radius:10px;
+    padding:14px 16px; margin:24px 0; background:var(--box);
+  }
+  .stop h3{margin:0 0 10px; font-size:19px; color:var(--red); border:0; padding:0;}
+  table{border-collapse:collapse; width:100%; margin:14px 0; font-size:16px;}
+  th,td{border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top;}
+  th{background:var(--box); font-weight:700; white-space:nowrap;}
+  .foot{margin-top:32px; padding-top:12px; border-top:1px solid var(--line);
+        font-size:13px; color:var(--sub);}
+  a{color:var(--purple);}
+  @media print{
+    body{background:#fff; color:#000; font-size:11pt; line-height:1.45; padding:8mm 10mm;}
+    h2{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    .note,.stop,.know,li,table,.menu{break-inside:avoid; page-break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Sumire+ の使い方</h1>
+<p class="lead">携帯（スマホ）用</p>
+
+<h2>0. 開き方とメニュー</h2>
+
+<div class="know">
+  <p><b>ホーム画面の「Sumire+」のアイコン</b>を押して開きます。<br>
+     （ブラウザからではなく、<b>アイコンから</b>開いてください。いちばん早く開きます）</p>
+  <p><b>開くのに 8〜9秒かかることがあります。</b>「読み込み中…」のまま少し待ってください。</p>
+</div>
+
+<p>開くと、<b>ボタンが4つ</b>並んでいます。</p>
+
+<div class="menu">
+  <div><b>📸 撮影</b>　… 保険証・指示書・処置の写真などを送る</div>
+  <div><b>📝 変更報告</b>　… 訪問予定やケアマネの変更を知らせる</div>
+  <div><b>📅 予定表</b>　… 毎日の訪問予定表を見る</div>
+  <div><b>📢 お知らせ</b>　… 事務所からの連絡を見る・入れる</div>
+</div>
+
+<div class="note">
+  どの画面からでも、いちばん下の <b>［← メニューに戻る］</b> で最初に戻れます。
+</div>
+
+<h2 class="shoot">1. 📸 撮影 — 書類や写真を送る</h2>
+
+<h3>手順</h3>
+<ol>
+  <li>メニューの <b>［📸 撮影］</b> を押す</li>
+  <li><b>① 撮影者</b>　… <b>自分の名前が最初から入っています</b>（変えられません）</li>
+  <li><b>② 利用者</b>　… <b>🔍 名前で検索</b> に名前を打つと候補が出ます。押して選ぶ<br>
+      <span class="big">まだ登録のない方は「🆕 新規利用者氏名」に手で入れる</span></li>
+  <li><b>③ 何を撮影しますか</b>　… 下の9つから選ぶ<br>
+      <span class="big">「保険証」を選ぶと、さらに種類を選ぶ欄が出ます</span>（次の表）</li>
+  <li><b>［📷 カメラを起動］</b> で撮る。<b>すでに撮ってある写真なら［🖼️ 写真ライブラリから選ぶ］</b></li>
+  <li>確認の画面が出ます。<b>写真をタップすると大きく見えます</b>（もう一度タップで閉じる）</li>
+  <li>足りなければ <b>［📷 もう1枚］</b>、撮り直すなら <b>［↺ 撮り直す］</b>。
+      入れ間違えたら <b>［← 情報修正に戻る］</b></li>
+  <li><b>［📤 送信する］</b>を押す。<b>「✓ 送信完了」</b>が出たら終わりです</li>
+</ol>
+
+<h3>③ で選べる9つ</h3>
+<table>
+  <tr><td>保険証</td><td>自己負担上限管理表</td><td>処置写真</td></tr>
+  <tr><td>家・駐車場</td><td>お薬手帳</td><td>検査データ</td></tr>
+  <tr><td>サマリー</td><td>利用者写真</td><td>その他</td></tr>
+</table>
+
+<div class="note">
+  <b>迷ったら「その他」で送ってかまいません。</b>事務所で見て振り分けます。
+</div>
+
+<h3>「保険証」を選んだときに出る欄</h3>
+<p>まず、この5つから選びます。</p>
+<div class="menu">
+  <div><b>介護保険</b>　／　<b>医療保険</b>　／　<b>後期高齢</b>　／　<b>公費</b>　／　<b>負担割合証</b></div>
+</div>
+<p><b>「医療保険」と「公費」は、さらに細かく選びます。</b></p>
+<table>
+  <tr><th>医療保険</th><td>社会保険／国民健康保険／マイナ保険証／資格確認書／生活保護受給者</td></tr>
+  <tr><th>公費</th><td>こども医療費助成／重度障がい者医療費助成／特定医療費受給者証／自立支援受給者証</td></tr>
+</table>
+<div class="note">
+  <b>券面に書いてあるとおりに選んでください。</b>分からないときは <b>「その他」</b>で送って、あとで事務所に一言ください。
+</div>
+
+<div class="know">
+  <p><b>送ると、LINE WORKS の「個人情報共有」グループに自動で知らせが届きます。</b>
+     <b>そのあと、あらためて連絡しなくてかまいません。</b></p>
+  <p><b>知らせに写真は付きません</b>（写真そのものは LINE WORKS に流れません）。</p>
+</div>
+
+<h2 class="report">2. 📝 変更報告 — 変わったことを知らせる</h2>
+
+<h3>5つの種類から選びます</h3>
+<table>
+  <tr><th>📅 訪問予定変更</th><td>訪問の日時を変える・休む・足す</td></tr>
+  <tr><th>📋 訪問プラン変更</th><td>入院・終了・休止・再開・退院</td></tr>
+  <tr><th>🆕 新規利用者追加</th><td>新しく始まる方</td></tr>
+  <tr><th>👤 ケアマネ変更</th><td>担当のケアマネが変わった</td></tr>
+  <tr><th>🏥 かかりつけ医変更</th><td>主治医・医療機関が変わった</td></tr>
+</table>
+
+<h3>手順</h3>
+<ol>
+  <li>メニューの <b>［📝 変更報告］</b> を押す</li>
+  <li>上の5つから、<b>報告したい種類</b>を押す</li>
+  <li><b>① 報告者</b>　… <b>自分の名前が最初から入っています</b></li>
+  <li><b>② 利用者</b>　… 名前で検索して選ぶ</li>
+  <li>あとは <b>＊ の付いた欄</b>を埋める（＊が付いていない欄は、分かる範囲で）</li>
+  <li><span class="big">どのグループに知らせるかを選ぶ</span>　…　<b>業務グループ</b>／<b>非常勤グループ</b></li>
+  <li>確認の画面で中身を見て、<b>［送信する］</b></li>
+</ol>
+
+<div class="note">
+  <b>入れ忘れた欄があると、その場所まで自動で戻ります。</b>赤くなっている欄を埋めてください。
+</div>
+
+<h2 class="sched">3. 📅 予定表 — 毎日の訪問予定を見る</h2>
+
+<ol>
+  <li>メニューの <b>［📅 予定表］</b> を押す</li>
+  <li><span class="big">夕方 17時30分より前は「今日」、17時30分を過ぎると「あす」が最初に出ます</span></li>
+  <li><b>ほかの日</b>も選べます。<b>［今日にもどる］</b>で戻れます</li>
+  <li><span class="big">指2本で広げると大きくなります</span>（＋ ・ − ・もとの大きさ のボタンもあります）</li>
+  <li>閉じるときは<b>黒いところ</b>を押す</li>
+</ol>
+
+<div class="note">
+  <b>金曜は、土曜とその次の月曜の2枚</b>が入ります。<br>
+  予定表は<b>見るだけ</b>です。ここから変更はできません。変更は <b>［📝 変更報告］</b> から。
+</div>
+
+<h2 class="notice">4. 📢 お知らせ — 事務所からの連絡</h2>
+
+<h3>見る</h3>
+<ol>
+  <li>メニューの <b>［📢 お知らせ］</b> を押すと、新しい順に並びます</li>
+  <li><b>赤い NEW</b> が付いているのは<b>3日以内</b>のものです</li>
+  <li>見出しを押すと<b>写真が大きく開きます</b></li>
+  <li>たくさんあるときは <b>🔍 見出しでさがす</b> に言葉を入れて絞れます</li>
+</ol>
+
+<h3>入れる</h3>
+<ol>
+  <li><b>［＋ 新しく入れる］</b> を押す</li>
+  <li><b>① 送信者</b>　… 自分の名前が入っています</li>
+  <li><b>② 見出し</b>　… <b>1行・100字まで</b>（例：事務所に用紙を置いています）</li>
+  <li><b>［📷 カメラを起動］</b> か <b>［🖼️ 写真ライブラリから選ぶ］</b> で写真を1枚</li>
+  <li><b>［✓ 確認して送信］</b></li>
+</ol>
+
+<div class="know">
+  <p><b>入れると、LINE WORKS の「業務」と「非常勤」の両方に知らせが流れます</b>（2行だけ・写真は付きません）。</p>
+  <p><b>PDF を付けられるのはパソコンからだけ</b>です。携帯からは写真1枚です。</p>
+</div>
+
+<h3>消す</h3>
+<div class="know">
+  <p>一覧のそれぞれの下にある <b>［🗑 このお知らせを消す］</b> を押します。<b>誰でも消せます。</b>
+     間違えて入れたときは、その場で消してかまいません。</p>
+  <p>消したものは<b>30日はゴミ箱に残る</b>ので、慌てなくて大丈夫です。</p>
+  <p><b>古いお知らせが自動で消えることはありません。</b>要らなくなったら消してください。</p>
+</div>
+
+<h2>5. 困ったとき</h2>
+
+<div class="know">
+  <p><b>「6桁のパスワード」をまた聞かれた</b><br>
+     → <b>こわれていません。</b>開き方（Safari・アイコン・LINE ワークスの中）ごとに、最初の1回だけ聞かれます。</p>
+  <p><b>名前の一覧に自分がいない／利用者さんが出てこない</b>　→　<b>谷川さん</b>へ</p>
+  <p><b>送信でつまずく・画面が出ない</b>　→　<b>谷川さん</b>へ</p>
+</div>
+
+<div class="stop">
+  <h3>お願い</h3>
+  <ol>
+    <li><b>利用者さんの写真や書類は、LINE WORKS に貼らないでください。</b>必ず Sumire+ から</li>
+    <li><b>6桁のパスワードは、人に教えないでください</b></li>
+  </ol>
+</div>
+
+<div class="foot">
+  2026-09-22 版　／　あわせて読む：<a href="lineworks_use.html">LINE WORKS の使い方</a>
+</div>
+
+</div>
+</body>
+</html>

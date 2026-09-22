@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>LINE WORKS の使い方</title>
+<style>
+  :root{
+    --ink:#1a1a1a; --sub:#555; --line:#dcdcdc;
+    --green:#11998e; --red:#c62828; --amber:#ef6c00;
+    --bg:#ffffff; --box:#f4f7f8;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#f0f0f0; --sub:#bdbdbd; --line:#3a3a3a;
+      --green:#2ec4b6; --red:#ff8a80; --amber:#ffb74d;
+      --bg:#141617; --box:#1e2224;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#f0f0f0; --sub:#bdbdbd; --line:#3a3a3a;
+    --green:#2ec4b6; --red:#ff8a80; --amber:#ffb74d;
+    --bg:#141617; --box:#1e2224;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; padding:20px 16px 40px; background:var(--bg); color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic","Meiryo",sans-serif;
+    font-size:17px; line-height:1.85; -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:640px; margin:0 auto;}
+  h1{
+    font-size:23px; margin:0 0 6px; padding-bottom:10px;
+    border-bottom:4px solid var(--green); line-height:1.4;
+  }
+  .lead{font-size:15px; color:var(--sub); margin:0 0 22px;}
+  h2{
+    font-size:19px; margin:30px 0 12px; padding:8px 14px;
+    background:var(--green); color:#fff; border-radius:6px; line-height:1.5;
+  }
+  h3{font-size:17px; margin:22px 0 8px; padding-left:10px; border-left:5px solid var(--green);}
+  ol,ul{margin:0 0 0 1.2em; padding:0;}
+  li{margin:0 0 10px;}
+  .note{
+    border-left:6px solid var(--amber); background:var(--box);
+    padding:12px 14px; margin:16px 0; font-size:16px; border-radius:0 6px 6px 0;
+  }
+  .big{font-size:18px; font-weight:700;}
+  .ng{font-weight:700; color:var(--red);}
+  .stop{
+    border:3px solid var(--red); border-radius:10px;
+    padding:14px 16px; margin:24px 0; background:var(--box);
+  }
+  .stop h3{margin:0 0 10px; font-size:19px; color:var(--red); border:0; padding:0;}
+  .stop li{font-size:17px; font-weight:700;}
+  .know{border:2px solid var(--line); border-radius:10px; padding:14px 16px; margin:16px 0;}
+  .know p{margin:0 0 12px;}
+  .know p:last-child{margin-bottom:0;}
+  table{border-collapse:collapse; width:100%; margin:14px 0; font-size:16px;}
+  th,td{border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top;}
+  th{background:var(--box); font-weight:700; white-space:nowrap;}
+  .foot{margin-top:32px; padding-top:12px; border-top:1px solid var(--line);
+        font-size:13px; color:var(--sub);}
+  a{color:var(--green);}
+  @media print{
+    body{background:#fff; color:#000; font-size:11pt; line-height:1.45; padding:8mm 10mm;}
+    h2{background:#11998e !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    .note,.stop,.know,li,table{break-inside:avoid; page-break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>LINE WORKS の使い方</h1>
+
+<h2>1. まず、いちばん大事なこと</h2>
+
+<div class="stop">
+  <h3>写真と PDF を、LINE WORKS に貼らないでください</h3>
+  <ol>
+    <li>保険証・指示書・処置の写真は <b>Sumire+ の「📸 撮影」</b>から送る</li>
+    <li>事務所からのお知らせの紙は <b>Sumire+ の「📢 お知らせ」</b>で見る</li>
+  </ol>
+</div>
+
+<div class="know">
+  <p><b>なぜ貼ってはいけないのか</b></p>
+  <p>LINE WORKS に貼った写真は、<b>1時間を過ぎると もう消せません</b>。
+     自分の画面から［削除］しても、<b>ほかの人の画面には残ったまま</b>です。</p>
+  <p>トークは <b>3年 残ります</b>。あとから入った人・辞めていく人にも、貼ったものは見えます。</p>
+  <p>だから <b>Sumire+ に入れます</b>。Sumire+ なら、<b>あとから消せます</b>。</p>
+</div>
+
+<h2>2. グループの使い分け</h2>
+
+<table>
+  <tr><th>グループ</th><th>何が流れるか</th></tr>
+  <tr><td><b>業務</b></td><td>ふだんの業務連絡。Sumire+ の「変更報告」「お知らせ」もここへ届きます</td></tr>
+  <tr><td><b>非常勤</b></td><td>同じく業務連絡。Sumire+ の「変更報告」「お知らせ」もここへ届きます</td></tr>
+  <tr><td><b>個人情報共有</b></td><td><b>Sumire+ の「撮影」の知らせだけ</b>が自動で届きます。<b>自分で書き込む場所ではありません</b></td></tr>
+</table>
+
+<div class="note">
+  <b>両方に入っている方がいます。</b>同じ連絡が2回 見えることがありますが、故障ではありません。
+</div>
+
+<h2>3. 自動で届くもの（自分で連絡しなくてよいもの）</h2>
+
+<div class="know">
+  <p>Sumire+ を使うと、<b>LINE WORKS へ自動で知らせが流れます</b>。
+     <b>そのあと、あらためて手で連絡する必要はありません。</b></p>
+  <p>
+     ・<b>📸 撮影</b>で送る　→　<b>個人情報共有</b>グループへ<br>
+     ・<b>📝 変更報告</b>を出す　→　<b>自分で選んだグループ</b>（業務／非常勤）へ<br>
+     ・<b>📢 お知らせ</b>を入れる　→　<b>業務と非常勤の両方</b>へ
+  </p>
+  <p><b>知らせに写真は付きません。</b>写真は <b>Sumire+ の中で見てください</b>。</p>
+</div>
+
+<h2>4. 書いてよいこと・いけないこと</h2>
+
+<h3>書いてよいこと</h3>
+<ul>
+  <li><b>文字の業務連絡</b>（申し送り・相談・確認）</li>
+</ul>
+
+<h3>書いてはいけないこと</h3>
+<ul>
+  <li><span class="ng">写真・PDF（利用者さんのものは特に）</span> → <b>Sumire+ へ</b></li>
+  <li><span class="ng">仕事と関係のないやりとり</span></li>
+</ul>
+
+<div class="stop">
+  <h3>設定でやらないでほしいこと（2つ）</h3>
+  <ol>
+    <li>パスワードを自分で変えない</li>
+    <li>2段階認証を ON にしない</li>
+  </ol>
+</div>
+
+<h2>5. 知っておいてほしいこと</h2>
+
+<div class="know">
+  <p><b>送ったものを取り消せるのは、送ってから1時間だけです。</b><br>
+     やり方＝そのトークを<b>長押し</b> →［<b>送信取消</b>］→［OK］。<br>
+     1時間を過ぎると、このメニューは出てきません。</p>
+  <p><b>［削除］は「送信取消」とは別ものです。</b>
+     ［削除］は<b>自分の画面から消えるだけ</b>で、ほかの人には残ります。</p>
+  <p><b>30日 開かないと、いったんログアウトされます。</b>
+     そのときは、また入り直してください。<b>パスワードは控えておいてください。</b></p>
+  <p><b>携帯をなくしたら、すぐ 谷川さん に連絡してください。</b>アカウントを止めます。</p>
+</div>
+
+<h2>6. 困ったとき</h2>
+<div class="know">
+  <p><b>入れない・パスワードが分からない</b>　→　<b>谷川さん</b>へ</p>
+  <p><b>「新しいパスワードを登録してください」と出た</b>　→　<b>自分で決めずに 谷川さん</b>へ</p>
+  <p><b>使い方が分からない</b>　→　<b>谷川さん</b>へ</p>
+</div>
+
+<div class="foot">
+  2026-09-22 版　／　あわせて読む：<a href="sumire_use.html">Sumire+ の使い方</a>
+</div>
+
+</div>
+</body>
+</html>
