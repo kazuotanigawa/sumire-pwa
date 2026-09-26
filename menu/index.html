@@ -52,17 +52,21 @@
   .act3 { background: linear-gradient(135deg, #f9b233, #ef8200); box-shadow: 0 10px 22px rgba(239,130,0,.30); }
   /* (1275_/D-329) 職員名簿＝濃い紫（谷川さん決定 2026-07-28）。2段目に1枚。今の4枚は1バイトも変えない。 */
   .act4 { background: linear-gradient(135deg,#6d43d6,#46249c); box-shadow:0 10px 22px rgba(70,36,156,.32); }
+  /* 🆕 (2161_/D-858・D-854) 職員名簿＝ピンク（谷川さん「変更報告と職員名簿の色が同じなので色をかえろ」→「もう少し綺麗な色に」）。
+     act4（紫）は変更報告の札が使い続ける＝1文字も変えていない。 */
+  .act5 { background: linear-gradient(135deg,#f48fb1,#ec407a); box-shadow:0 10px 22px rgba(236,64,122,.30); }
   .soon { background: linear-gradient(135deg, #cfcfda, #b9b9c8); box-shadow: 0 10px 22px rgba(150,150,170,.22); cursor: default; }
-  /* 🚨 押し心地の行は2本ある（:hover と :active）。両方に act4 を足す＝この1枚だけ挙動が違うのを防ぐ（1167_ の教訓） */
-  .home-card.act1:hover, .home-card.act2:hover, .home-card.act3:hover, .home-card.act4:hover { transform: translateY(-4px); box-shadow: 0 16px 30px rgba(80,80,120,.28); }
-  .home-card.act1:active, .home-card.act2:active, .home-card.act3:active, .home-card.act4:active { transform: translateY(-1px); }
+  /* 🚨 押し心地の行は2本ある（:hover と :active）。両方に act4 を足す＝この1枚だけ挙動が違うのを防ぐ（1167_ の教訓）
+     🆕 (2161_/D-858) act5（職員名簿のピンク）も2本とも足した。 */
+  .home-card.act1:hover, .home-card.act2:hover, .home-card.act3:hover, .home-card.act4:hover, .home-card.act5:hover { transform: translateY(-4px); box-shadow: 0 16px 30px rgba(80,80,120,.28); }
+  .home-card.act1:active, .home-card.act2:active, .home-card.act3:active, .home-card.act4:active, .home-card.act5:active { transform: translateY(-1px); }
   /* 絵は .home-em と同じ 54px 枠に収め、字の位置をそろえる（transform ゆえレイアウト不動） */
   .ic-kaipoke { height: 54px; display: flex; align-items: flex-end; justify-content: center;
                 filter: drop-shadow(0 5px 9px rgba(80,35,0,.42)); }
   .ic-kaipoke img { height: 80px; width: auto; display: block; transform: translateY(19px); }
   /* (1275_/D-329) 職員名簿の絵。カイポケと同じ作法（54px 枠・下端そろえ・影だけ・白いふち無し） */
   .ic-roster { height: 54px; display: flex; align-items: flex-end; justify-content: center;
-               filter: drop-shadow(0 5px 9px rgba(45,15,90,.48)); }
+               filter: drop-shadow(0 5px 9px rgba(150,20,80,.40)); }  /* 🆕 (2161_/D-858) 絵の影もピンクの色みに（札がピンクになったため） */
   .ic-roster img { height: 80px; width: auto; display: block; transform: translateY(17px); }
   /* (1265_/D-325) カイポケ取込の「前回の取込日時」1行だけ（谷川さんが調整プレビューで実測確定 2026-07-27）。
      ほかの4枚と寸法は共有しない＝この行だけの見た目。読めないうちは hidden＝行ごと出ない（＝今までどおりのボタン）。 */
@@ -152,12 +156,12 @@
         </button>
         <button type="button" class="home-card act4" id="card-change">
           <div class="home-em">📝</div>
-          <div class="home-nm">変更報告</div>
+          <div class="home-nm">変更報告入力</div><!-- 🆕 (2161_/D-858) 札の字（紫 act4 のまま） -->
         </button>
         <!-- (1275_/D-329) 5枚目＝職員名簿。4列グリッドの5枚目ゆえ自動で2段目の左端に出る。
              まねる相手は card-pc / card-monitor（押したら窓内にはめ込むだけの単純な形）。
              card-kaipoke は取込の状態表示（くるくる・横棒・postMessage）を持つ特別な作りゆえ まねない。 -->
-        <button type="button" class="home-card act4" id="card-staff">
+        <button type="button" class="home-card act5" id="card-staff"><!-- 🆕 (2161_/D-858) 紫 act4 → ピンク act5 -->
           <span class="ic-roster"><img src="staff_roster.png" alt=""></span>
           <div class="home-nm">職員名簿</div>
         </button>
@@ -309,7 +313,7 @@
     //   🚨 ここに住所も合言葉も書かない（合言葉は ../index.html が1箇所だけ持っている・G-308／D-123）。
     //   (2006_/便2) 共通の道（openInFrame）を通す＝読み先の字は1文字も変えていない。
     document.getElementById('card-change').addEventListener('click', function () {
-      openInFrame('change', '📝 変更報告');
+      openInFrame('change', '📝 変更報告入力');   // 🆕 (2161_/D-858) 帯の題名（下の「もう出ているか」の見分け＝同じ字・2か所そろえる）
     });
     // ◀ メニューに戻る（iframe を止めてメニューへ）
     //   🚨 (2006_/便2) ここは【1バイトも変えていない】。持ち続ける窓は #app-frame とは別の窓なので、
@@ -573,7 +577,7 @@
         if (d.to === 'change-report') {
           // 🚨 いま既に変更報告を出しているなら何もしない
           //    ＝連打や 遅れて届いた合図で【入力中の画面が読み直される】のを防ぐ。
-          if (frameTitle.textContent === '📝 変更報告') return;
+          if (frameTitle.textContent === '📝 変更報告入力') return;   // 🆕 (2161_/D-858) 上の openInFrame の題名と同じ字（違うと押すたびに窓を開き直す＝D-690）
           document.getElementById('card-change').click();
         } else if (d.to === 'dashboard') {
           // (1982_/便40) 📦 振分けダッシュボードを出す。
@@ -588,8 +592,8 @@
           //      ＝いま既に出しているなら何もしない（連打・遅れて届いた合図で読み直さない）。
           //   🚨 差し込む場所は【else if の連鎖の中】＝最後の else の後ろに置くと
           //      届いた合図が黙って「メニューに戻る」に化ける。
-          if (frameTitle.textContent === '📥 変更内容入力') return;
-          openInFrame('entry', '📥 変更内容入力');
+          if (frameTitle.textContent === '📥 変更内容確認') return;   // 🆕 (2161_/D-858) 次の行の題名と同じ字（2か所そろえる）
+          openInFrame('entry', '📥 変更内容確認');
         } else {
           document.getElementById('back-btn').click();
         }
