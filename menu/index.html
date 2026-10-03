@@ -223,7 +223,8 @@
     //    🚨 足すのは `entry: 1` の1語だけ＝ほかは1バイトも変えていない（📦 と 📝 の動きは不変）。
     //    🚨 相方＝画面側の札 `DASH_REFRESH_ON_SHOW`（forms）。**あちらが入でないとここが効いても古いまま見える**
     //       ＝change_entry.html は出された瞬間に自分で取り直す（あちらの札を読むだけ）。
-    var SHELL_KEEP_ = { pc: 1, change: 1, entry: 1 };
+    //    🆕 (2312_/D-924) 🗓 予定表チェックも持ち続ける＝`ycheck: 1` の1語だけ足した（2回目からすぐ開く・D-748／D-752 と同じ）。
+    var SHELL_KEEP_ = { pc: 1, change: 1, entry: 1, ycheck: 1 };
     var shellPanes_ = {};                     // 見分け → 窓（SHELL_KEEP_ に載っている画面だけ入る）
     var shellCur_ = '';                       // いま出している窓の見分け
 
@@ -566,7 +567,7 @@
         var d = ev.data;
         if (!d || typeof d !== 'object' || Array.isArray(d)) return;           // ②
         if (d.type !== 'sumire-nav') return;                                   // ③
-        if (d.to !== 'change-report' && d.to !== 'menu' && d.to !== 'dashboard' && d.to !== 'change-entry') return;  // ④（2087_/便AR で change-entry を1つ足した）
+        if (d.to !== 'change-report' && d.to !== 'menu' && d.to !== 'dashboard' && d.to !== 'change-entry' && d.to !== 'yotei-check') return;  // ④（2087_/便AR で change-entry・🆕 2312_ で yotei-check を1つずつ足した）
         // 窓が出ていないときは受けない（＝メニューを見ているだけのときは何も起きない）。
         //   🚨 出ていない状態は CSS 側（#frame-screen{display:none}）なので、いまの見た目で見る。
         if (getComputedStyle(frameScreen).display === 'none') return;
@@ -594,6 +595,13 @@
           //      届いた合図が黙って「メニューに戻る」に化ける。
           if (frameTitle.textContent === '📥 変更内容確認') return;   // 🆕 (2161_/D-858) 次の行の題名と同じ字（2か所そろえる）
           openInFrame('entry', '📥 変更内容確認');
+        } else if (d.to === 'yotei-check') {
+          // 🆕 (2312_/D-924) 🗓 予定表チェックを出す。上の change-entry の枝とまったく同じ作法
+          //   ＝いま既に出しているなら何もしない（連打・遅れて届いた合図で読み直さない）。
+          //   🚨 【else if の連鎖の中】に置く（最後の else の後ろだと「メニューに戻る」に化ける）。
+          //   🚨 窓の見分け＝GAS に渡す名前＝'ycheck'（読み先は openInFrame のいちばん下の既定の道のまま＝1行も足さない）。
+          if (frameTitle.textContent === '🗓 予定表チェック') return;   // 次の行の題名と同じ字（2か所そろえる・D-858 と同じ作法）
+          openInFrame('ycheck', '🗓 予定表チェック');
         } else {
           document.getElementById('back-btn').click();
         }
