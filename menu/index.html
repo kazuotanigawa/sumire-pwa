@@ -567,7 +567,7 @@
         var d = ev.data;
         if (!d || typeof d !== 'object' || Array.isArray(d)) return;           // ②
         if (d.type !== 'sumire-nav') return;                                   // ③
-        if (d.to !== 'change-report' && d.to !== 'menu' && d.to !== 'dashboard' && d.to !== 'change-entry' && d.to !== 'yotei-check') return;  // ④（2087_/便AR で change-entry・🆕 2312_ で yotei-check を1つずつ足した）
+        if (d.to !== 'change-report' && d.to !== 'menu' && d.to !== 'dashboard' && d.to !== 'change-entry' && d.to !== 'yotei-check' && d.to !== 'yotei-run') return;  // ④（2087_/便AR で change-entry・🆕 2312_ で yotei-check・🆕 2318_ で yotei-run を1つずつ足した）
         // 窓が出ていないときは受けない（＝メニューを見ているだけのときは何も起きない）。
         //   🚨 出ていない状態は CSS 側（#frame-screen{display:none}）なので、いまの見た目で見る。
         if (getComputedStyle(frameScreen).display === 'none') return;
@@ -602,6 +602,19 @@
           //   🚨 窓の見分け＝GAS に渡す名前＝'ycheck'（読み先は openInFrame のいちばん下の既定の道のまま＝1行も足さない）。
           if (frameTitle.textContent === '🗓 予定表チェック') return;   // 次の行の題名と同じ字（2か所そろえる・D-858 と同じ作法）
           openInFrame('ycheck', '🗓 予定表チェック');
+        } else if (d.to === 'yotei-run') {
+          // 🆕 (2318_/便3-2) 予定表チェックの「🔄 最新情報で比較」「📅 来月チェック」＝このパソコンの比べる道具を起こす合図を開く。
+          //   🚨 新しい型名・新しい受け口・送り主をたどる守りは作らない（D-693）＝守りは上の①〜⑥（⑥＝隠れた窓の合図は捨てる）＋下の2つ。
+          //   (a) いま予定表チェックを出しているときだけ（題名の字で見分ける＝上の yotei-check の枝と同じ字）
+          //   (b) 前に開いてから10秒たっていなければ何もしない（連打よけ）
+          //   (c) 開き方はカイポケ取込のカードと同じ（location.href＝画面内はめ込みからは開けないので外枠で開く）。
+          //   🚨 合図は URL の中身を道具に渡さない（%1 なし＝D-288 核2）＝ほかのページから合図だけ送られても、Google 側に頼みが無ければ何もしない。
+          //   🚨 【else if の連鎖の中】に置く（最後の else の後ろだと「メニューに戻る」に化ける）。
+          if (frameTitle.textContent !== '🗓 予定表チェック') return;
+          var nowRun = Date.now();
+          if (nowRun - (window.__ycRunLastAt || 0) < 10000) return;   // 前に開いた時刻はこの枝の中だけで持つ（ほかの行は変えない）
+          window.__ycRunLastAt = nowRun;
+          location.href = 'sumire-yotei:run';
         } else {
           document.getElementById('back-btn').click();
         }
