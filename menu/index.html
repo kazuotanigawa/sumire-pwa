@@ -227,6 +227,22 @@
     var SHELL_KEEP_ = { pc: 1, change: 1, entry: 1, ycheck: 1 };
     var shellPanes_ = {};                     // 見分け → 窓（SHELL_KEEP_ に載っている画面だけ入る）
     var shellCur_ = '';                       // いま出している窓の見分け
+    // 🆕 (2597_) 預かり物＝予定表チェックの「📥 開く」から来た／「🗓 予定表チェックに戻る」で戻った の印を1つだけ。
+    //   🚨 このページの中の変数だけ＝ブラウザの保存場所には書かない（D-138）＝パソコンごと・閉じれば消える。
+    //   🚨 持つのは受付番号と来た所の印だけ（名前は運ばない）。1回渡したら消す・60秒を過ぎたら渡さない。
+    var SHELL_TICKET_ = null;
+    // 🆕 (2597_) 変更内容確認・予定表チェックの窓の「返事の宛先」（その窓から届いた合図の送り主と出どころ）。
+    //   窓を出し直したら、ここへ中身の無い合図を1つ送る＝中の画面はそれを見て外枠に聞く。
+    //   🚨 隠した窓には「隠れた」がその場で届かず、出した瞬間にまとめて届く・ときどき気づけない（2006_／2087_ の実測）＝外枠が出したと言う。
+    //   🚨 合図に中身は入れない（受付番号は今までどおり、聞いてきた窓にだけ返す）。宛先は覚えた出どころだけ（'*' は使わない）。
+    //   🚨 宛先を覚えるのは受け口の⑥（隠れた窓の合図を捨てる）のあと＝いま出している窓（shellCur_）からの合図だけ。
+    //      送り主をたどる所は fromHiddenPane_ の1本のまま（2か所に書かない・G-738）。
+    var SHELL_ADDR_ = {};
+    function shellNudge_(view) {
+      var a = SHELL_ADDR_[view];
+      if (!a || (view !== 'entry' && view !== 'ycheck')) return;
+      try { a.w.postMessage({ type: 'sumire-ticket', who: view, nudge: true }, a.o); } catch (e) {}
+    }
 
     function shellShowPane_(view, src) {
       // 出たままの連打では何もしない（＝読み直さない）。使い捨ての窓は今までどおり読み直す。
@@ -237,6 +253,7 @@
       for (var k in shellPanes_) { if (shellPanes_[k]) shellPanes_[k].style.display = 'none'; }
       if (SHELL_KEEP_[view]) {
         var f = shellPanes_[view];
+        var again = !!f;                            // 🆕 (2597_) 出し直し（2回目から）か
         if (!f) {                                   // 🚨 作るのは初めての1回だけ
           f = document.createElement('iframe');
           f.className = 'app-pane';
@@ -252,6 +269,7 @@
         appFrame.src = src;                         // 使い捨ての窓は今までどおり毎回 読み直す
       }
       shellCur_ = view;
+      if (SHELL_KEEP_[view] && again) shellNudge_(view);   // 🆕 (2597_) 出し直した窓へ「出しました」（中身なし）
     }
 
     // 🚨 (2006_/便2) 送り主が【隠れている窓】だと確かに分かったときだけ true を返す。
@@ -567,7 +585,7 @@
         var d = ev.data;
         if (!d || typeof d !== 'object' || Array.isArray(d)) return;           // ②
         if (d.type !== 'sumire-nav') return;                                   // ③
-        if (d.to !== 'change-report' && d.to !== 'menu' && d.to !== 'dashboard' && d.to !== 'change-entry' && d.to !== 'yotei-check' && d.to !== 'yotei-run') return;  // ④（2087_/便AR で change-entry・🆕 2312_ で yotei-check・🆕 2318_ で yotei-run を1つずつ足した）
+        if (d.to !== 'change-report' && d.to !== 'menu' && d.to !== 'dashboard' && d.to !== 'change-entry' && d.to !== 'yotei-check' && d.to !== 'yotei-run' && d.to !== 'ask-ticket') return;  // ④（2087_/便AR で change-entry・🆕 2312_ で yotei-check・🆕 2318_ で yotei-run・🆕 2597_ で ask-ticket を1つずつ足した）
         // 窓が出ていないときは受けない（＝メニューを見ているだけのときは何も起きない）。
         //   🚨 出ていない状態は CSS 側（#frame-screen{display:none}）なので、いまの見た目で見る。
         if (getComputedStyle(frameScreen).display === 'none') return;
@@ -575,6 +593,7 @@
         //   通す5条件（①〜⑤）は1バイトも変えていない（D-690／D-693／D-701／D-740）。
         //   分からなかったら【通す】＝正しい合図が落ちる道を1つも増やさない（fromHiddenPane_ を見よ）。
         if (SHELL_MULTI_FRAME && fromHiddenPane_(ev)) return;                  // ⑥
+        if (SHELL_MULTI_FRAME && (shellCur_ === 'entry' || shellCur_ === 'ycheck')) SHELL_ADDR_[shellCur_] = { w: ev.source, o: ev.origin };   // 🆕 (2597_) いま出している窓の返事の宛先を覚えるだけ（通す・捨てるは変えない）
         if (d.to === 'change-report') {
           // 🚨 いま既に変更報告を出しているなら何もしない
           //    ＝連打や 遅れて届いた合図で【入力中の画面が読み直される】のを防ぐ。
@@ -594,6 +613,9 @@
           //   🚨 差し込む場所は【else if の連鎖の中】＝最後の else の後ろに置くと
           //      届いた合図が黙って「メニューに戻る」に化ける。
           if (frameTitle.textContent === '📥 変更内容確認') return;   // 🆕 (2161_/D-858) 次の行の題名と同じ字（2か所そろえる）
+          // 🆕 (2597_) 予定表チェックの「📥 開く」から来たときだけ受付番号を預かる。それ以外（ダッシュボードから等）は空にする＝前の預かり物を残さない。
+          SHELL_TICKET_ = (d.from === 'ycheck' && typeof d.receipt === 'string' && /^[A-Za-z0-9._-]{1,64}$/.test(d.receipt))
+            ? { view: 'entry', receipt: d.receipt, at: Date.now() } : null;
           openInFrame('entry', '📥 変更内容確認');
         } else if (d.to === 'yotei-check') {
           // 🆕 (2312_/D-924) 🗓 予定表チェックを出す。上の change-entry の枝とまったく同じ作法
@@ -601,6 +623,8 @@
           //   🚨 【else if の連鎖の中】に置く（最後の else の後ろだと「メニューに戻る」に化ける）。
           //   🚨 窓の見分け＝GAS に渡す名前＝'ycheck'（読み先は openInFrame のいちばん下の既定の道のまま＝1行も足さない）。
           if (frameTitle.textContent === '🗓 予定表チェック') return;   // 次の行の題名と同じ字（2か所そろえる・D-858 と同じ作法）
+          // 🆕 (2597_) 変更内容確認の「🗓 予定表チェックに戻る」から来たときだけ「前のまま見せて」を預かる（無ければ空）。
+          SHELL_TICKET_ = (d.back === 1) ? { view: 'ycheck', keep: true, at: Date.now() } : null;
           openInFrame('ycheck', '🗓 予定表チェック');
         } else if (d.to === 'yotei-run') {
           // 🆕 (2318_/便3-2) 予定表チェックの「🔄 最新情報で比較」「📅 来月チェック」＝このパソコンの比べる道具を起こす合図を開く。
@@ -615,6 +639,21 @@
           if (nowRun - (window.__ycRunLastAt || 0) < 10000) return;   // 前に開いた時刻はこの枝の中だけで持つ（ほかの行は変えない）
           window.__ycRunLastAt = nowRun;
           location.href = 'sumire-yotei:run';
+        } else if (d.to === 'ask-ticket') {
+          // 🆕 (2597_) 中の画面（変更内容確認・予定表チェック）が「預かり物はありますか」と聞く。画面は動かさない＝返事を返すだけ。
+          //   🚨 中身を返すのは、聞いた画面＝預かった先＝いま出している画面 がそろい、60秒以内のときだけ。渡したら消す（1回きり）。
+          //   🚨 返事の宛先は聞いてきた窓と出どころだけ（'*' は使わない・MDN の返し方）。送り主をたどる新しい守りは作らない（D-693）。
+          //   🚨 【else if の連鎖の中】に置く（最後の else の後ろだと「メニューに戻る」に化ける）。
+          if ((d.who !== 'entry' && d.who !== 'ycheck') || typeof d.id !== 'string' || !/^[A-Za-z0-9]{8,32}$/.test(d.id)) return;
+          var tk = SHELL_TICKET_, ans = { type: 'sumire-ticket', id: d.id, who: d.who };
+          if (tk && tk.view === d.who && shellCur_ === d.who && (Date.now() - tk.at) <= 60000) {
+            SHELL_TICKET_ = null;
+            if (tk.receipt) { ans.receipt = tk.receipt; ans.from = 'ycheck'; }
+            if (tk.keep) ans.keep = true;
+          } else {
+            ans.none = true;
+          }
+          try { if (ev.source) ev.source.postMessage(ans, ev.origin); } catch (e) {}
         } else {
           document.getElementById('back-btn').click();
         }
