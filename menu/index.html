@@ -127,9 +127,24 @@
     overflow: hidden; text-overflow: ellipsis;
   }
   #drop-hint.show { display: block; }
+  /* (2725_/出す_2724) 新しい版が公開されたときだけ出る上の帯（押すと読み直す）。
+     ふだんは hidden＝今までと1ドット同じ画面。出ている間だけ body.upd-on で 44px 下げる。 */
+  #upd-band {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 99990;
+    display: block; width: 100%; height: 44px; padding: 0 16px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, #f9b233, #ef8200); color: #fff;
+    font-family: inherit; font-size: 16px; font-weight: 800; line-height: 44px; text-align: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    box-shadow: 0 2px 8px rgba(239,130,0,.35);
+  }
+  #upd-band[hidden] { display: none; }                  /* 書かないと上の display に負けて出たままになる */
+  body.upd-on { padding-top: 44px; }
+  body.upd-on #frame-screen { height: calc(100vh - 44px); }
+  body.upd-on #menu-screen { min-height: calc(100vh - 44px); }
 </style>
 </head>
 <body>
+  <button type="button" id="upd-band" hidden></button>
   <!-- メニュー画面（案B×案1） -->
   <div id="menu-screen">
     <div class="home-wrap">
@@ -739,6 +754,70 @@
         e.preventDefault();                                    // 「無題」の窓を出さない
         showHint();                                            // 落とし先を短く案内するだけ（読まない・送らない）
       }, true);
+    })();
+  </script>
+
+  <script>
+    /* (2725_/出す_2724) 開いたままの外枠が古いままになる（2680_ の行き先が事務の PC に届かなかった）のを
+       知らせる帯。新しい版に気づいたら帯を出すだけで、読み直すのは帯を押したときだけ（途中の入力を消さない）。
+       - 開いた直後に、いま読んだ自分の中身を写しから取って覚える（force-cache＝網へはふつう行かない）。
+       - 前に出ている間だけ10分ごと（＋前に戻ったとき）に HEAD で印（ETag）だけ聞く。
+         GitHub Pages はどのファイルを push しても印が全部変わるので、印が違ったら中身を取って字で比べる。
+       - 押したら写しを新しい物に入れ替えてから読み直す（reload が写しを使うかはブラウザ次第のため）。
+       - 失敗したら何も出さない（帯が出ないだけ）。覚えた中身はこの中の変数だけ（保存場所には書かない）。 */
+    (function () {
+      var band = document.getElementById('upd-band');
+      if (!band || !window.fetch) return;
+      var EVERY_MS = 10 * 60 * 1000;
+      var url = location.href.split('#')[0];
+      var mine = null, tag = '', lastAsk = Date.now(), busy = false, timer = 0, going = false;
+      band.textContent = 'Sumire+のアップデート版があります。押してください。';
+      function etagOf(r) { return (r.headers.get('ETag') || '').replace(/^W\//, ''); }
+      function stop() {
+        if (timer) { clearInterval(timer); timer = 0; }
+        document.removeEventListener('visibilitychange', onVis);
+      }
+      function show() {
+        stop();
+        band.hidden = false;
+        document.body.classList.add('upd-on');
+      }
+      function ask() {
+        if (mine === null || busy || document.hidden) return;
+        if (Date.now() - lastAsk < EVERY_MS) return;
+        busy = true;
+        lastAsk = Date.now();                                  // 聞き始めの時刻（間隔が倍に延びないように）
+        fetch(url, { method: 'HEAD', cache: 'no-store' })
+          .then(function (r) {
+            var t = r.ok ? etagOf(r) : '';
+            if (!t || t === tag) return;                       // 印が無い・同じ＝何もしない
+            return fetch(url, { cache: 'no-store' }).then(function (r2) {
+              if (!r2.ok) return;
+              return r2.text().then(function (body) {
+                if (body === mine) tag = etagOf(r2) || t;      // ほかのファイルの push＝印だけ覚え直す
+                else show();
+              });
+            });
+          })
+          .catch(function () {})
+          .then(function () { busy = false; });
+      }
+      function onVis() { if (!document.hidden) ask(); }
+      fetch(url, { cache: 'force-cache' })
+        .then(function (r) {
+          if (!r.ok) throw new Error('remember');
+          tag = etagOf(r);
+          return r.text();
+        })
+        .then(function (t) { mine = t; })
+        .catch(function () { stop(); });                       // 自分を覚えられなければ以後は聞かない
+      timer = setInterval(ask, EVERY_MS);
+      document.addEventListener('visibilitychange', onVis);
+      band.addEventListener('click', function () {
+        if (going) return;
+        going = true;
+        fetch(url, { cache: 'reload' }).catch(function () {}).then(function () { location.reload(); });
+      });
     })();
   </script>
 
