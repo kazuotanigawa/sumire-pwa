@@ -615,7 +615,7 @@
         var d = ev.data;
         if (!d || typeof d !== 'object' || Array.isArray(d)) return;           // ②
         if (d.type !== 'sumire-nav') return;                                   // ③
-        if (d.to !== 'change-report' && d.to !== 'menu' && d.to !== 'dashboard' && d.to !== 'change-entry' && d.to !== 'yotei-check' && d.to !== 'yotei-run' && d.to !== 'ask-ticket' && d.to !== 'inst-renew' && d.to !== 'list-compare') return;  // ④（2087_/便AR で change-entry・🆕 2312_ で yotei-check・🆕 2318_ で yotei-run・🆕 2597_ で ask-ticket・🆕 2680_ で inst-renew と list-compare を足した）
+        if (d.to !== 'change-report' && d.to !== 'menu' && d.to !== 'dashboard' && d.to !== 'change-entry' && d.to !== 'yotei-check' && d.to !== 'yotei-run' && d.to !== 'ask-ticket' && d.to !== 'inst-renew' && d.to !== 'list-compare' && d.to !== 'lcmp-run') return;  // ④（2087_/便AR で change-entry・🆕 2312_ で yotei-check・🆕 2318_ で yotei-run・🆕 2597_ で ask-ticket・🆕 2680_ で inst-renew と list-compare・🆕 2776_ で lcmp-run を足した）
         // 窓が出ていないときは受けない（＝メニューを見ているだけのときは何も起きない）。
         //   🚨 出ていない状態は CSS 側（#frame-screen{display:none}）なので、いまの見た目で見る。
         if (getComputedStyle(frameScreen).display === 'none') return;
@@ -681,6 +681,15 @@
           if (nowRun - (window.__ycRunLastAt || 0) < 10000) return;   // 前に開いた時刻はこの枝の中だけで持つ（ほかの行は変えない）
           window.__ycRunLastAt = nowRun;
           location.href = 'sumire-yotei:run';
+        } else if (d.to === 'lcmp-run') {
+          // 🆕 (2776_/出す_2760) 🔍 リスト・カイポケ比較の「🔄 最新情報で比較」＝このパソコンのカイポケ取込を起こす合図を開く（カイポケ取込のカードと同じ合図）。
+          //   守りは上の yotei-run の枝と同じ3つ＝(a) いま比較を出しているときだけ（list-compare の枝と同じ字）(b) 前に開いてから10秒は何もしない (c) location.href。
+          //   🚨 【else if の連鎖の中】に置く（最後の else の後ろだと「メニューに戻る」に化ける）。
+          if (frameTitle.textContent !== '🔍 リスト・カイポケ比較') return;
+          var nowLc = Date.now();
+          if (nowLc - (window.__lcRunLastAt || 0) < 10000) return;   // 前に開いた時刻はこの枝の中だけで持つ
+          window.__lcRunLastAt = nowLc;
+          location.href = 'sumire-kaipoke:run';
         } else if (d.to === 'ask-ticket') {
           // 🆕 (2597_) 中の画面（変更内容確認・予定表チェック）が「預かり物はありますか」と聞く。画面は動かさない＝返事を返すだけ。
           //   🚨 中身を返すのは、聞いた画面＝預かった先＝いま出している画面 がそろい、60秒以内のときだけ。渡したら消す（1回きり）。
