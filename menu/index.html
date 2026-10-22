@@ -112,6 +112,8 @@
   }
   #back-btn:hover { background: rgba(255,255,255,.34); }
   #frame-title { font-size: 15px; font-weight: 800; }
+  /* 🆕 (2883_/出す_2881) 紫の帯で 📞 が見えにくい＝📞 の後ろに白い丸（字の大きさ・帯の高さは変えない）。付けるのは shellTitleDisc_ だけ。 */
+  #frame-title .ico-disc { display: inline-flex; align-items: center; justify-content: center; width: 1.4em; height: 1.4em; margin: -.2em 0; border-radius: 50%; background: #fff; line-height: 1; vertical-align: middle; }
   #app-frame { flex: 1 1 auto; width: 100%; border: none; background: #fff; }
   /* (2006_/便2) 画面ごとに持ち続ける窓。#app-frame と同じ見た目にそろえる（新しい見た目を作っていない）。
      🚨 隠し方は display:none の1通りだけ（JS 側でしか付け外ししない）。 */
@@ -341,6 +343,19 @@
       frameTitle.textContent = title;
       menuScreen.style.display = 'none';
       frameScreen.style.display = 'flex';
+    }
+    // 🆕 (2883_/出す_2881) 題名の頭の 📞 だけを白い丸の span で包み直す（openInFrame の本体は触らない＝共通の道は1本のまま）。
+    //   🚨 textContent は前と同じ字のまま＝「いま出しているか」の比べ（題名の字で見る）はそのまま効く。
+    //   次に openInFrame が呼ばれれば textContent で上書きされて元に戻る。
+    function shellTitleDisc_() {
+      var t = frameTitle.textContent;
+      if (t.indexOf('📞') !== 0) return;
+      var s = document.createElement('span');
+      s.className = 'ico-disc';
+      s.textContent = '📞';
+      frameTitle.textContent = '';
+      frameTitle.appendChild(s);
+      frameTitle.appendChild(document.createTextNode(t.slice(2)));
     }
     // 📦 振分けダッシュボード
     document.getElementById('card-pc').addEventListener('click', function () {
@@ -674,6 +689,7 @@
           if (frameTitle.textContent === '📞 電話の伝言') return;   // 次の行の題名と同じ字（2か所そろえる）
           SHELL_TICKET_ = null;
           openInFrame('pmemo', '📞 電話の伝言');
+          shellTitleDisc_();   // (2883_) 📞 を白い丸の上に
         } else if (d.to === 'yotei-run') {
           // 🆕 (2318_/便3-2) 予定表チェックの「🔄 最新情報で比較」「📅 来月チェック」＝このパソコンの比べる道具を起こす合図を開く。
           //   🚨 新しい型名・新しい受け口・送り主をたどる守りは作らない（D-693）＝守りは上の①〜⑥（⑥＝隠れた窓の合図は捨てる）＋下の2つ。
