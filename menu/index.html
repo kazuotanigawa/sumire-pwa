@@ -57,11 +57,13 @@
   .act5 { background: linear-gradient(135deg,#f48fb1,#ec407a); box-shadow:0 10px 22px rgba(236,64,122,.30); }
   /* 🆕 (2640_/出す_2639) 医療保険照会＝水色（使用率モニターの act2 と同じ色だったのを分けた）。 */
   .act6 { background: linear-gradient(135deg,#3bc9db,#0c8599); box-shadow:0 10px 22px rgba(12,133,153,.30); }
+  /* 🆕 (3034_/出す_3030) 印刷＝オレンジ（印刷の画面の上の帯と同じ色）。 */
+  .act7 { background:linear-gradient(135deg,#e8590c,#fd7e14); box-shadow:0 10px 22px rgba(232,89,12,.30); }
   .soon { background: linear-gradient(135deg, #cfcfda, #b9b9c8); box-shadow: 0 10px 22px rgba(150,150,170,.22); cursor: default; }
   /* 🚨 押し心地の行は2本ある（:hover と :active）。両方に act4 を足す＝この1枚だけ挙動が違うのを防ぐ（1167_ の教訓）
      🆕 (2161_/D-858) act5（職員名簿のピンク）も2本とも足した。🆕 (2640_) act6（医療保険照会の水色）も2本とも足した。 */
-  .home-card.act1:hover, .home-card.act2:hover, .home-card.act3:hover, .home-card.act4:hover, .home-card.act5:hover, .home-card.act6:hover { transform: translateY(-4px); box-shadow: 0 16px 30px rgba(80,80,120,.28); }
-  .home-card.act1:active, .home-card.act2:active, .home-card.act3:active, .home-card.act4:active, .home-card.act5:active, .home-card.act6:active { transform: translateY(-1px); }
+  .home-card.act1:hover, .home-card.act2:hover, .home-card.act3:hover, .home-card.act4:hover, .home-card.act5:hover, .home-card.act6:hover, .home-card.act7:hover { transform: translateY(-4px); box-shadow: 0 16px 30px rgba(80,80,120,.28); }
+  .home-card.act1:active, .home-card.act2:active, .home-card.act3:active, .home-card.act4:active, .home-card.act5:active, .home-card.act6:active, .home-card.act7:active { transform: translateY(-1px); }
   /* 絵は .home-em と同じ 54px 枠に収め、字の位置をそろえる（transform ゆえレイアウト不動） */
   .ic-kaipoke { height: 54px; display: flex; align-items: flex-end; justify-content: center;
                 filter: drop-shadow(0 5px 9px rgba(80,35,0,.42)); }
@@ -190,6 +192,11 @@
         <button type="button" class="home-card act6" id="card-oqs">
           <div class="home-em">🪪</div>
           <div class="home-nm">医療保険照会</div>
+        </button>
+        <!-- 🆕 (3034_/出す_3030) 7枚目＝🖨️ 印刷（送付ラベルなどを印刷する）。2段目の3番目に出る。まねる相手は card-oqs（押したら窓内にはめ込むだけ）。 -->
+        <button type="button" class="home-card act7" id="card-print">
+          <div class="home-em">🖨️</div>
+          <div class="home-nm">印刷</div>
         </button>
       </main>
     </div>
@@ -373,6 +380,11 @@
     //   🚨 SHELL_KEEP_ には足さない＝開くたびに作り直して、いちばん新しい「読んだ日時」を出す（使う回数が少ない画面）。
     document.getElementById('card-oqs').addEventListener('click', function () {
       openInFrame('oqs', '🪪 医療保険照会');
+    });
+    // 🖨️ 印刷（3034_/出す_3030・医療保険照会と同じ窓内はめ込み）
+    //   🚨 SHELL_KEEP_ には足さない＝メニューに戻ると印刷一覧は消える（使う回数が少ない画面・医療保険照会と同じ）。
+    document.getElementById('card-print').addEventListener('click', function () {
+      openInFrame('print', '🖨️ 印刷');
     });
     // 📝 変更報告（1896_/便2）＝外枠（../index.html）に「パソコン用」の目印を付けて窓内にはめ込む。
     //   🚨 ここに住所も合言葉も書かない（合言葉は ../index.html が1箇所だけ持っている・G-308／D-123）。
