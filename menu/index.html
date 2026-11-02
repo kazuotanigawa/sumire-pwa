@@ -823,7 +823,7 @@
       var EVERY_MS = 10 * 60 * 1000;
       var url = location.href.split('#')[0];
       var mine = null, tag = '', lastAsk = Date.now(), busy = false, timer = 0, going = false;
-      band.textContent = 'Sumire+のアップデート版があります。押してください。';
+      band.textContent = 'Sumire+ のアップデート版があります。ここを押して更新してください。';
       function etagOf(r) { return (r.headers.get('ETag') || '').replace(/^W\//, ''); }
       function stop() {
         if (timer) { clearInterval(timer); timer = 0; }

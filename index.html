@@ -116,7 +116,7 @@
              maxlength="6" aria-label="パスワード">
       <button id="pinBtn" type="button">開始する</button>
       <div class="msg" id="pinMsg" role="alert" aria-live="assertive"></div>
-      <p class="help">パスワードが分からないときは谷川さんに聞いてください</p>
+      <p class="help">パスワードが不明な場合は谷川さんに確認してください</p>
     </div>
   </div>
 
@@ -249,13 +249,13 @@
             var code = (j && j.code) || '';
             var left = (j && typeof j.left === 'number') ? j.left : -1;
             if (code === 'LOCKED' || (code === 'BAD_PIN' && left <= 0)) {
-              pinMsg.textContent = '5回 まちがえました。15分ほどたってからもう一度お試しください。';
+              pinMsg.textContent = 'パスワードを5回間違えました。15分ほど経過してから、もう一度お試しください。';
             } else if (code === 'OFF') {
-              pinMsg.textContent = '⚠️ エラーコード 1004　谷川さんに連絡してください。';
+              pinMsg.textContent = '⚠️ エラーコード 1004 が発生しました。谷川さんに連絡してください。';
             } else if (code === 'BAD_PIN') {
               pinMsg.textContent = 'パスワードがちがいます（あと ' + left + ' 回）';
             } else {
-              pinMsg.textContent = '⚠️ エラーコード 1004　谷川さんに連絡してください。';
+              pinMsg.textContent = '⚠️ エラーコード 1004 が発生しました。谷川さんに連絡してください。';
             }
             pinInput.value = '';
             pinBtn.disabled = false;
@@ -263,7 +263,7 @@
             try { pinInput.focus(); } catch (e) {}
           })
           .catch(function () {
-            pinMsg.textContent = 'つながりませんでした。電波の良いところでもう一度お試しください。（⚠️ エラーコード 1005）';
+            pinMsg.textContent = 'つながりませんでした。電波の良いところでもう一度お試しください。それでも解決しない場合は、⚠️ エラーコード 1005 が発生しました。谷川さんに連絡してください。';
             pinBtn.disabled = false;
             pinBtn.textContent = '開始する';
           });
