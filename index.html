@@ -114,7 +114,7 @@
       <p class="lead">パスワードを入力してください<br>（次からは聞かれません）</p>
       <input id="pinInput" type="password" inputmode="numeric" autocomplete="off"
              maxlength="6" aria-label="パスワード">
-      <button id="pinBtn" type="button">はじめる</button>
+      <button id="pinBtn" type="button">開始する</button>
       <div class="msg" id="pinMsg" role="alert" aria-live="assertive"></div>
       <p class="help">パスワードが分からないときは谷川さんに聞いてください</p>
     </div>
@@ -259,13 +259,13 @@
             }
             pinInput.value = '';
             pinBtn.disabled = false;
-            pinBtn.textContent = 'はじめる';
+            pinBtn.textContent = '開始する';
             try { pinInput.focus(); } catch (e) {}
           })
           .catch(function () {
             pinMsg.textContent = 'つながりませんでした。電波の良いところでもう一度お試しください。（⚠️ エラーコード 1005）';
             pinBtn.disabled = false;
-            pinBtn.textContent = 'はじめる';
+            pinBtn.textContent = '開始する';
           });
       }
 
