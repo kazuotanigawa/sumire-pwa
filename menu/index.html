@@ -833,6 +833,8 @@
         stop();
         band.hidden = false;
         document.body.classList.add('upd-on');
+        // (3214_/出す_3191) 幅 390 では字が「…」で切れる＝帯は広げず、切れるときだけ短い字にする（決定メモ 3191_ 追記 14:58）
+        if (band.scrollWidth > band.clientWidth) band.textContent = 'アップデート版があります。ここを押して更新';
       }
       function ask() {
         if (mine === null || busy || document.hidden) return;
