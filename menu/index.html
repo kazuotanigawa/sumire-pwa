@@ -275,13 +275,16 @@
     var SHELL_ADDR_ = {};
     function shellNudge_(view) {
       var a = SHELL_ADDR_[view];
-      if (!a || (view !== 'entry' && view !== 'ycheck' && view !== 'irenew' && view !== 'lcmp' && view !== 'pmemo')) return;   // 🆕 (2680_) irenew・lcmp を足した・🆕 (2838_) pmemo を足した
+      if (!a || (view !== 'pc' && view !== 'change' && view !== 'entry' && view !== 'ycheck' && view !== 'irenew' && view !== 'lcmp' && view !== 'pmemo')) return;   // 🆕 (2680_) irenew・lcmp を足した・🆕 (2838_) pmemo を足した・🆕 (3320_) pc・change を足した
       try { a.w.postMessage({ type: 'sumire-ticket', who: view, nudge: true }, a.o); } catch (e) {}
     }
 
     function shellShowPane_(view, src) {
       // 出たままの連打では何もしない（＝読み直さない）。使い捨ての窓は今までどおり読み直す。
-      if (shellCur_ === view && SHELL_KEEP_[view]) return;
+      // 🆕 (3320_/出す_3313) ◀ メニューで隠したあと同じ窓を出し直したとき（#frame-screen が隠れている）も「出しました」を送る。
+      //   中の画面は合図を1度受けると見張りでは数えない＝ここで送らないと、窓を1度切り替えたあとの ◀ メニュー→同じ窓に気づけなかった。
+      //   見張りと二重に数えない手当ては中の画面の受け口の側（見張りが数えた直後2秒の初めての合図は数えない）。
+      if (shellCur_ === view && SHELL_KEEP_[view]) { if (frameScreen.style.display === 'none') shellNudge_(view); return; }
       // いま出ている窓をしまう。使い捨ての窓（SHELL_KEEP_ に載っていない画面）は今までどおり【止める】。
       if (shellCur_ && !SHELL_KEEP_[shellCur_]) appFrame.src = '';
       appFrame.style.display = 'none';
@@ -651,7 +654,7 @@
         //   通す5条件（①〜⑤）は1バイトも変えていない（D-690／D-693／D-701／D-740）。
         //   分からなかったら【通す】＝正しい合図が落ちる道を1つも増やさない（fromHiddenPane_ を見よ）。
         if (SHELL_MULTI_FRAME && fromHiddenPane_(ev)) return;                  // ⑥
-        if (SHELL_MULTI_FRAME && (shellCur_ === 'entry' || shellCur_ === 'ycheck' || shellCur_ === 'irenew' || shellCur_ === 'lcmp' || shellCur_ === 'pmemo')) SHELL_ADDR_[shellCur_] = { w: ev.source, o: ev.origin };   // 🆕 (2597_) いま出している窓の返事の宛先を覚えるだけ（通す・捨てるは変えない）
+        if (SHELL_MULTI_FRAME && (shellCur_ === 'pc' || shellCur_ === 'change' || shellCur_ === 'entry' || shellCur_ === 'ycheck' || shellCur_ === 'irenew' || shellCur_ === 'lcmp' || shellCur_ === 'pmemo')) SHELL_ADDR_[shellCur_] = { w: ev.source, o: ev.origin };   // 🆕 (2597_) いま出している窓の返事の宛先を覚えるだけ（通す・捨てるは変えない）
         if (d.to === 'change-report') {
           // 🚨 いま既に変更報告を出しているなら何もしない
           //    ＝連打や 遅れて届いた合図で【入力中の画面が読み直される】のを防ぐ。
@@ -739,7 +742,8 @@
           //   🚨 返事の宛先は聞いてきた窓と出どころだけ（'*' は使わない・MDN の返し方）。送り主をたどる新しい守りは作らない（D-693）。
           //   🚨 【else if の連鎖の中】に置く（最後の else の後ろだと「メニューに戻る」に化ける）。
           //   🆕 (2680_) irenew・lcmp も聞いてよい（預かり物は無いので必ず「無し」が返る＝開いたときに返事の宛先を覚えてもらうための合図）。
-          if ((d.who !== 'entry' && d.who !== 'ycheck' && d.who !== 'irenew' && d.who !== 'lcmp' && d.who !== 'pmemo') || typeof d.id !== 'string' || !/^[A-Za-z0-9]{8,32}$/.test(d.id)) return;
+          //   🆕 (3320_/出す_3313) pc（ダッシュボード）・change（変更報告）も同じ＝開いたときに宛先を覚えてもらい、出し直したら「出しました」を送る（隠れた窓には「出た」がときどき届かない・2006_／2013_）。
+          if ((d.who !== 'pc' && d.who !== 'change' && d.who !== 'entry' && d.who !== 'ycheck' && d.who !== 'irenew' && d.who !== 'lcmp' && d.who !== 'pmemo') || typeof d.id !== 'string' || !/^[A-Za-z0-9]{8,32}$/.test(d.id)) return;
           var tk = SHELL_TICKET_, ans = { type: 'sumire-ticket', id: d.id, who: d.who };
           if (tk && tk.view === d.who && shellCur_ === d.who && (Date.now() - tk.at) <= 60000) {
             SHELL_TICKET_ = null;
