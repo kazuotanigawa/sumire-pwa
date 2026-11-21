@@ -59,11 +59,13 @@
   .act6 { background: linear-gradient(135deg,#3bc9db,#0c8599); box-shadow:0 10px 22px rgba(12,133,153,.30); }
   /* 🆕 (3034_/出す_3030) 印刷＝オレンジ（印刷の画面の上の帯と同じ色）。 */
   .act7 { background:linear-gradient(135deg,#e8590c,#fd7e14); box-shadow:0 10px 22px rgba(232,89,12,.30); }
+  /* 🆕 (4148_/出す_4146) 看護定期訪問＝黄緑（決定メモ 4146_ 決めたこと19）。act1〜7 と .soon は1文字も変えていない。 */
+  .act8 { background:linear-gradient(135deg,#a8e063,#56ab2f); box-shadow:0 10px 22px rgba(86,171,47,.30); }
   .soon { background: linear-gradient(135deg, #cfcfda, #b9b9c8); box-shadow: 0 10px 22px rgba(150,150,170,.22); cursor: default; }
   /* 🚨 押し心地の行は2本ある（:hover と :active）。両方に act4 を足す＝この1枚だけ挙動が違うのを防ぐ（1167_ の教訓）
      🆕 (2161_/D-858) act5（職員名簿のピンク）も2本とも足した。🆕 (2640_) act6（医療保険照会の水色）も2本とも足した。 */
-  .home-card.act1:hover, .home-card.act2:hover, .home-card.act3:hover, .home-card.act4:hover, .home-card.act5:hover, .home-card.act6:hover, .home-card.act7:hover { transform: translateY(-4px); box-shadow: 0 16px 30px rgba(80,80,120,.28); }
-  .home-card.act1:active, .home-card.act2:active, .home-card.act3:active, .home-card.act4:active, .home-card.act5:active, .home-card.act6:active, .home-card.act7:active { transform: translateY(-1px); }
+  .home-card.act1:hover, .home-card.act2:hover, .home-card.act3:hover, .home-card.act4:hover, .home-card.act5:hover, .home-card.act6:hover, .home-card.act7:hover, .home-card.act8:hover { transform: translateY(-4px); box-shadow: 0 16px 30px rgba(80,80,120,.28); }
+  .home-card.act1:active, .home-card.act2:active, .home-card.act3:active, .home-card.act4:active, .home-card.act5:active, .home-card.act6:active, .home-card.act7:active, .home-card.act8:active { transform: translateY(-1px); }
   /* 絵は .home-em と同じ 54px 枠に収め、字の位置をそろえる（transform ゆえレイアウト不動） */
   .ic-kaipoke { height: 54px; display: flex; align-items: flex-end; justify-content: center;
                 filter: drop-shadow(0 5px 9px rgba(80,35,0,.42)); }
@@ -212,6 +214,11 @@
         <button type="button" class="home-card act7" id="card-print">
           <div class="home-em">🖨️</div>
           <div class="home-nm">印刷</div>
+        </button>
+        <!-- 🆕 (4148_/出す_4146) 8枚目＝🩺 看護定期訪問（決定メモ 4146_ 決めたこと19・印刷の後ろ）。まねる相手は card-print（押したら窓内にはめ込むだけ）。 -->
+        <button type="button" class="home-card act8" id="card-teiki">
+          <div class="home-em">🩺</div>
+          <div class="home-nm">看護定期訪問</div>
         </button>
       </main>
     </div>
@@ -433,6 +440,11 @@
     //   🚨 SHELL_KEEP_ には足さない＝メニューに戻ると印刷一覧は消える（使う回数が少ない画面・医療保険照会と同じ）。
     document.getElementById('card-print').addEventListener('click', function () {
       openInFrame('print', '🖨️ 印刷');
+    });
+    // 🩺 看護定期訪問（4148_/出す_4146・印刷と同じ窓内はめ込み）
+    //   🚨 SHELL_KEEP_ には足さない＝開くたびにカイポケの取込と職員の携帯の答えを読み直す（印刷と同じ使い捨ての窓）。
+    document.getElementById('card-teiki').addEventListener('click', function () {
+      openInFrame('teiki', '🩺 看護定期訪問');
     });
     // 📝 変更報告（1896_/便2）＝外枠（../index.html）に「パソコン用」の目印を付けて窓内にはめ込む。
     //   🚨 ここに住所も合言葉も書かない（合言葉は ../index.html が1箇所だけ持っている・G-308／D-123）。
@@ -691,7 +703,7 @@
         var d = ev.data;
         if (!d || typeof d !== 'object' || Array.isArray(d)) return;           // ②
         if (d.type !== 'sumire-nav') return;                                   // ③
-        if (d.to !== 'change-report' && d.to !== 'menu' && d.to !== 'dashboard' && d.to !== 'change-entry' && d.to !== 'yotei-check' && d.to !== 'yotei-run' && d.to !== 'ask-ticket' && d.to !== 'inst-renew' && d.to !== 'list-compare' && d.to !== 'lcmp-run' && d.to !== 'phone-memo' && d.to !== 'self-pay' && d.to !== 'fx-run') return;  // ④（🆕 3360_ で self-pay・🆕 3141_ で fx-run・🆕 2838_ で phone-memo・2087_/便AR で change-entry・🆕 2312_ で yotei-check・🆕 2318_ で yotei-run・🆕 2597_ で ask-ticket・🆕 2680_ で inst-renew と list-compare・🆕 2776_ で lcmp-run を足した）
+        if (d.to !== 'change-report' && d.to !== 'menu' && d.to !== 'dashboard' && d.to !== 'change-entry' && d.to !== 'yotei-check' && d.to !== 'yotei-run' && d.to !== 'ask-ticket' && d.to !== 'inst-renew' && d.to !== 'list-compare' && d.to !== 'lcmp-run' && d.to !== 'phone-memo' && d.to !== 'self-pay' && d.to !== 'fx-run' && d.to !== 'teiki' && d.to !== 'teiki-fax') return;  // ④（🆕 4146_ で teiki と teiki-fax・🆕 3360_ で self-pay・🆕 3141_ で fx-run・🆕 2838_ で phone-memo・2087_/便AR で change-entry・🆕 2312_ で yotei-check・🆕 2318_ で yotei-run・🆕 2597_ で ask-ticket・🆕 2680_ で inst-renew と list-compare・🆕 2776_ で lcmp-run を足した）
         // 窓が出ていないときは受けない（＝メニューを見ているだけのときは何も起きない）。
         //   🚨 出ていない状態は CSS 側（#frame-screen{display:none}）なので、いまの見た目で見る。
         if (getComputedStyle(frameScreen).display === 'none') return;
@@ -755,6 +767,21 @@
           if (frameTitle.textContent === '💴 自己負担') return;   // 次の行の題名と同じ字（2か所そろえる）
           SHELL_TICKET_ = null;
           openInFrame('selfpay', '💴 自己負担');
+        } else if (d.to === 'teiki' || d.to === 'teiki-fax') {
+          // 🆕 (4148_/出す_4146) 🩺 看護定期訪問 ⇄ 🖨️ 印刷の 📠 FAX送付状（看護定期訪問のタブ）。上の self-pay の枝と同じ作法。
+          //   🚨 月は YYYY-MM の形だけ・試しは 1 だけを通す（ほかの字は URL に入れない）。
+          //   🚨 teiki-fax は いま看護定期訪問を出しているときだけ／teiki は いま看護定期訪問を出していれば何もしない（連打・遅れて届いた合図で読み直さない）。
+          //   🚨 【else if の連鎖の中】に置く（最後の else の後ろだと「メニューに戻る」に化ける）。
+          var tkYm = (typeof d.ym === 'string' && /^\d{4}-\d{2}$/.test(d.ym)) ? d.ym : '';
+          var tkTry = (d['try'] === 1 || d['try'] === '1');
+          SHELL_TICKET_ = null;
+          if (d.to === 'teiki-fax') {
+            if (frameTitle.textContent !== '🩺 看護定期訪問' || !tkYm) return;
+            openInFrame('print&fax=teiki&ym=' + tkYm + '&from=teiki' + (tkTry ? '&try=1' : ''), '🖨️ 印刷');
+          } else {
+            if (frameTitle.textContent === '🩺 看護定期訪問') return;   // 下の題名と同じ字（カードの openInFrame とも同じ・3か所そろえる）
+            openInFrame('teiki' + (tkYm ? '&ym=' + tkYm : '') + (tkTry ? '&try=1' : ''), '🩺 看護定期訪問');
+          }
         } else if (d.to === 'yotei-run') {
           // 🆕 (2318_/便3-2) 予定表チェックの「🔄 最新情報で比較」「📅 来月チェック」＝このパソコンの比べる道具を起こす合図を開く。
           //   🚨 新しい型名・新しい受け口・送り主をたどる守りは作らない（D-693）＝守りは上の①〜⑥（⑥＝隠れた窓の合図は捨てる）＋下の2つ。
