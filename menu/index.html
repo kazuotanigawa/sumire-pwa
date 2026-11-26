@@ -106,33 +106,35 @@
   /* ===== はめ込み画面（iframe） ===== */
   #frame-screen { display: none; height: 100vh; flex-direction: column; }
   #frame-bar {
-    height: 46px; flex: 0 0 46px; display: flex; align-items: center; gap: 12px;
+    height: 56px; flex: 0 0 56px; display: flex; align-items: center; gap: 12px;   /* 🆕 (4359_/出す_4359) 46px→56px＝高さ 44px のボタンの上下に 6px ずつ */
     background: linear-gradient(135deg, #7c5cd6, #5b8def); color: #fff; padding: 0 14px;
     box-shadow: 0 2px 8px rgba(80,80,120,.25);
+    position: relative; z-index: 6;   /* 🆕 (4359_/出す_4359) 犬の覆い #shell-wait（top 46px・z-index 5・変えない）が帯の下の 10px に重なるので、帯を覆いより上に出す */
   }
-  #back-btn {
-    border: none; background: rgba(255,255,255,.22); color: #fff; font-family: inherit;
-    font-size: 14px; font-weight: 800; padding: 7px 14px; border-radius: 999px; cursor: pointer;
+  /* 🆕 (4359_/出す_4359) 帯のボタン3つ＝ダッシュボードのボタン（dashboard_css.html の #dash-tiles .move-btn.bulk）と同じ 幅150px・高さ44px・字14px・太さ700・角丸12px。
+     乗せたときの動きも同じ（scale(1.04)＋影・dashboard_css.html の :hover の共有の並びの値）。色は前のまま（◀ は白の半透明・📞 は赤の色の移り）。 */
+  #back-btn, #pm-open, #pm-close {
+    box-sizing: border-box; flex: 0 0 150px; width: 150px; height: 44px; padding: 0; margin: 0;
+    border: none; border-radius: 12px; color: #fff; font-family: inherit; font-size: 14px; font-weight: 700;
+    white-space: nowrap; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+    cursor: pointer; transition: transform .12s, box-shadow .12s, background .15s, filter .12s, border-color .12s;
   }
+  #back-btn:hover, #pm-open:hover, #pm-close:hover { transform: scale(1.04); box-shadow: 0 1px 4px rgba(0,0,0,.20); }
+  #back-btn { background: rgba(255,255,255,.22); }
   #back-btn:hover { background: rgba(255,255,255,.34); }
-  /* 🆕 (4331_/出す_4331) 帯の右の端の「📞 電話の伝言」と「✖ 閉じて元の画面に戻る」。大きさは上の #back-btn と同じ（字 14px・太さ 800・余白 7px 14px・丸い形）。
-     📞 の色と白い丸は dashboard_css.html の .btn-phone-memo と .pm-ico、赤い数字は .unread-badge の値を写した（新しい色を作らない）。 */
-  #pm-open, #pm-close {
-    display: inline-flex; align-items: center; gap: .3em;   /* 絵と字を縦の真ん中にそろえ、絵が行を押し広げないようにする（字体が違っても ◀ メニューと同じ高さ・出す_4331 で本物と日本語の字体の両方で測った） */
-    margin-left: auto; border: none; color: #fff; font-family: inherit; white-space: nowrap;
-    font-size: 14px; font-weight: 800; padding: 7px 14px; border-radius: 999px; cursor: pointer;
-  }
+  /* 🆕 (4331_/出す_4331) 帯の右の端の「📞 電話の伝言」と「✖ 閉じて戻る」。📞 の色と白い丸は dashboard_css.html の .btn-phone-memo と .pm-ico、赤い数字は .unread-badge の値を写した（新しい色を作らない）。 */
+  #pm-open, #pm-close { margin-left: auto; }
   #pm-open { background: linear-gradient(135deg,#e11d48,#fb7185); }
-  #pm-close { background: rgba(255,255,255,.22); }
-  #pm-close:hover { background: rgba(255,255,255,.34); }
+  /* 🆕 (4359_/出す_4359) ✖ は白い地に紫の字（#5b3fb0＝menu/manifest.json の theme_color）。帯の右の端の青と同じ色の仲間で見えにくかったため。乗せても地は白のまま。 */
+  #pm-close, #pm-close:hover { background: #fff; color: #5b3fb0; }
   /* ✖ の字は Windows の Chrome では記号の字体で描かれ、行が 2px 高くなる（本物で ◀ メニュー 33px・✖ 35px を測った・出す_4331）。箱に入れて行の高さを 1 にする */
   #pm-close .pm-x { display: inline-block; line-height: 1; vertical-align: middle; }
   #pm-open[hidden], #pm-close[hidden], #pm-open .unread-badge[hidden] { display: none; }
   #pm-open .pm-ico { display: inline-flex; align-items: center; justify-content: center; width: 1.4em; height: 1.4em; margin: -.2em 0; border-radius: 50%; background: #fff; line-height: 1; vertical-align: middle; flex: none; }
   #pm-open .unread-badge { background: #e53935; color: #fff; border-radius: 10px; padding: 0 7px; margin: 0 2px; font-size: 12px; }
   /* 🆕 (4331_/出す_4331) 重ねた伝言の窓＝帯の下の所を覆う（犬 #shell-wait の z-index 5 より下）。窓は DOM の中で動かさず、この class の付け外しだけで重ねる。
-     iframe は高さを書かないと 150px になるので、高さは帯の 46px を引いた残りを書く。 */
-  .app-pane.pm-over { position: absolute; left: 0; right: 0; top: 46px; bottom: 0; width: 100%; height: calc(100% - 46px); z-index: 4; }
+     iframe は高さを書かないと 150px になるので、高さは帯の 56px を引いた残りを書く（🆕 4359_ で 46px→56px）。 */
+  .app-pane.pm-over { position: absolute; left: 0; right: 0; top: 56px; bottom: 0; width: 100%; height: calc(100% - 56px); z-index: 4; }
   #frame-title { font-size: 15px; font-weight: 800; }
   /* 🆕 (2883_/出す_2881) 紫の帯で 📞 が見えにくい＝📞 の後ろに白い丸（字の大きさ・帯の高さは変えない）。付けるのは shellTitleDisc_ だけ。 */
   #frame-title .ico-disc { display: inline-flex; align-items: center; justify-content: center; width: 1.4em; height: 1.4em; margin: -.2em 0; border-radius: 50%; background: #fff; line-height: 1; vertical-align: middle; }
@@ -249,7 +251,7 @@
       <span id="frame-title">📦 振分けダッシュボード</span>
       <!-- 🆕 (4331_/出す_4331) どの画面からも電話の伝言を上に重ねて開く。札 PHONE_MEMO_ON が入のときだけ JS が出す（初めは hidden）。赤い数字＝まだ済んでいない伝言の数（0件は出さない）。 -->
       <button type="button" id="pm-open" hidden><span class="pm-ico">📞</span> 電話の伝言 <span class="unread-badge" id="pm-open-count" hidden>0</span></button>
-      <button type="button" id="pm-close" hidden><span class="pm-x">✖</span> 閉じて元の画面に戻る</button>
+      <button type="button" id="pm-close" hidden><span class="pm-x">✖</span> 閉じて戻る</button>
     </div><!-- frame-title はカードに応じて差し替え -->
 
     <iframe id="app-frame" src="" allow="fullscreen" allowfullscreen></iframe>
@@ -461,7 +463,8 @@
       var over = shellPmIsOver_();
       var pm = shellPmState_;
       var on = !!(SHELL_MULTI_FRAME && pm && pm.on === true);
-      shellPmOpenBtn_.hidden = !on || over;   // 重ねている間は 📞 を隠し、✖ を出す
+      var dash = (shellCur_ === 'pc');        // 🆕 (4359_/出す_4359) 振分けダッシュボードには中に 📞 がある＝帯の 📞 は出さない（2つ並べない）
+      shellPmOpenBtn_.hidden = !on || over || dash;   // 重ねている間は 📞 を隠し、✖ を出す
       shellPmCloseBtn_.hidden = !over;
       var c = document.getElementById('pm-open-count');
       if (c) {
@@ -469,6 +472,20 @@
         if (!on || pm.pending == null || isNaN(n) || n <= 0) { c.hidden = true; c.textContent = '0'; }
         else { c.textContent = String(n); c.hidden = false; }
       }
+      shellDocTitle_(over);
+    }
+    // 🆕 (4359_/出す_4359) 窓の題名（document.title）＝「Sumire+ 」＋帯の題名から頭の絵文字を除いた字。
+    //   🚨 呼ぶのは上の shellPmPaint_ の1か所だけ（G-738＝2か所に書かない）。帯の題名の字（#frame-title）は1字も変えない＝「もう出ているか」の比べ（D-858）はそのまま。
+    //   アプリの名前（menu/manifest.json の name）と同じ「Sumire+」で始めるので、Chrome はアプリの窓の頭に名前を重ねて付けない。
+    function shellDocTitle_(over) {
+      var t;
+      if (getComputedStyle(frameScreen).display === 'none') t = 'Sumire+ メニュー';
+      else if (over) t = 'Sumire+ 電話の伝言';
+      else {
+        var n = String(frameTitle.textContent || '').replace(/^[^\p{L}\p{N}]+/u, '');
+        t = n ? ('Sumire+ ' + n) : 'Sumire+ メニュー';
+      }
+      if (document.title !== t) document.title = t;
     }
     function shellPmCount_(pm) {
       shellPmState_ = (pm && typeof pm === 'object')
@@ -522,8 +539,9 @@
       return false;
     }
     // 下の窓が切り替わるときは、必ず先に重ねを閉じる（openInFrame の本体は1字も変えず、外から包むだけ）。
+    //   🆕 (4359_/出す_4359) 本体を呼んだ後にもう一度塗る＝新しい shellCur_ と帯の題名で、帯の 📞 と窓の題名を決め直す（先の shellPmClose_ の塗りは前の画面のまま）。
     var shellOpenInFrame0_ = openInFrame;
-    openInFrame = function (v, t) { shellPmClose_(); return shellOpenInFrame0_(v, t); };
+    openInFrame = function (v, t) { shellPmClose_(); var r = shellOpenInFrame0_(v, t); shellPmPaint_(); return r; };
     if (shellPmOpenBtn_) shellPmOpenBtn_.addEventListener('click', function () { shellPmOpen_(); });
     if (shellPmCloseBtn_) shellPmCloseBtn_.addEventListener('click', function () { shellPmClose_(); });
     // 📦 振分けダッシュボード
