@@ -124,6 +124,8 @@
   #pm-open { background: linear-gradient(135deg,#e11d48,#fb7185); }
   #pm-close { background: rgba(255,255,255,.22); }
   #pm-close:hover { background: rgba(255,255,255,.34); }
+  /* ✖ の字は Windows の Chrome では記号の字体で描かれ、行が 2px 高くなる（本物で ◀ メニュー 33px・✖ 35px を測った・出す_4331）。箱に入れて行の高さを 1 にし、◀ メニューと同じ 33px にそろえる */
+  #pm-close .pm-x { display: inline-block; line-height: 1; vertical-align: middle; }
   #pm-open[hidden], #pm-close[hidden], #pm-open .unread-badge[hidden] { display: none; }
   #pm-open .pm-ico { display: inline-flex; align-items: center; justify-content: center; width: 1.4em; height: 1.4em; margin: -.2em 0; border-radius: 50%; background: #fff; line-height: 1; vertical-align: middle; flex: none; }
   #pm-open .unread-badge { background: #e53935; color: #fff; border-radius: 10px; padding: 0 7px; margin: 0 2px; font-size: 12px; }
@@ -246,7 +248,7 @@
       <span id="frame-title">📦 振分けダッシュボード</span>
       <!-- 🆕 (4331_/出す_4331) どの画面からも電話の伝言を上に重ねて開く。札 PHONE_MEMO_ON が入のときだけ JS が出す（初めは hidden）。赤い数字＝まだ済んでいない伝言の数（0件は出さない）。 -->
       <button type="button" id="pm-open" hidden><span class="pm-ico">📞</span> 電話の伝言 <span class="unread-badge" id="pm-open-count" hidden>0</span></button>
-      <button type="button" id="pm-close" hidden>✖ 閉じて元の画面に戻る</button>
+      <button type="button" id="pm-close" hidden><span class="pm-x">✖</span> 閉じて元の画面に戻る</button>
     </div><!-- frame-title はカードに応じて差し替え -->
 
     <iframe id="app-frame" src="" allow="fullscreen" allowfullscreen></iframe>
