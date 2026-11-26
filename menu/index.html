@@ -118,13 +118,14 @@
   /* 🆕 (4331_/出す_4331) 帯の右の端の「📞 電話の伝言」と「✖ 閉じて元の画面に戻る」。大きさは上の #back-btn と同じ（字 14px・太さ 800・余白 7px 14px・丸い形）。
      📞 の色と白い丸は dashboard_css.html の .btn-phone-memo と .pm-ico、赤い数字は .unread-badge の値を写した（新しい色を作らない）。 */
   #pm-open, #pm-close {
+    display: inline-flex; align-items: center; gap: .3em;   /* 絵と字を縦の真ん中にそろえ、絵が行を押し広げないようにする（字体が違っても ◀ メニューと同じ高さ・出す_4331 で本物と日本語の字体の両方で測った） */
     margin-left: auto; border: none; color: #fff; font-family: inherit; white-space: nowrap;
     font-size: 14px; font-weight: 800; padding: 7px 14px; border-radius: 999px; cursor: pointer;
   }
   #pm-open { background: linear-gradient(135deg,#e11d48,#fb7185); }
   #pm-close { background: rgba(255,255,255,.22); }
   #pm-close:hover { background: rgba(255,255,255,.34); }
-  /* ✖ の字は Windows の Chrome では記号の字体で描かれ、行が 2px 高くなる（本物で ◀ メニュー 33px・✖ 35px を測った・出す_4331）。箱に入れて行の高さを 1 にし、◀ メニューと同じ 33px にそろえる */
+  /* ✖ の字は Windows の Chrome では記号の字体で描かれ、行が 2px 高くなる（本物で ◀ メニュー 33px・✖ 35px を測った・出す_4331）。箱に入れて行の高さを 1 にする */
   #pm-close .pm-x { display: inline-block; line-height: 1; vertical-align: middle; }
   #pm-open[hidden], #pm-close[hidden], #pm-open .unread-badge[hidden] { display: none; }
   #pm-open .pm-ico { display: inline-flex; align-items: center; justify-content: center; width: 1.4em; height: 1.4em; margin: -.2em 0; border-radius: 50%; background: #fff; line-height: 1; vertical-align: middle; flex: none; }
