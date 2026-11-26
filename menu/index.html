@@ -115,6 +115,21 @@
     font-size: 14px; font-weight: 800; padding: 7px 14px; border-radius: 999px; cursor: pointer;
   }
   #back-btn:hover { background: rgba(255,255,255,.34); }
+  /* 🆕 (4331_/出す_4331) 帯の右の端の「📞 電話の伝言」と「✖ 閉じて元の画面に戻る」。大きさは上の #back-btn と同じ（字 14px・太さ 800・余白 7px 14px・丸い形）。
+     📞 の色と白い丸は dashboard_css.html の .btn-phone-memo と .pm-ico、赤い数字は .unread-badge の値を写した（新しい色を作らない）。 */
+  #pm-open, #pm-close {
+    margin-left: auto; border: none; color: #fff; font-family: inherit; white-space: nowrap;
+    font-size: 14px; font-weight: 800; padding: 7px 14px; border-radius: 999px; cursor: pointer;
+  }
+  #pm-open { background: linear-gradient(135deg,#e11d48,#fb7185); }
+  #pm-close { background: rgba(255,255,255,.22); }
+  #pm-close:hover { background: rgba(255,255,255,.34); }
+  #pm-open[hidden], #pm-close[hidden], #pm-open .unread-badge[hidden] { display: none; }
+  #pm-open .pm-ico { display: inline-flex; align-items: center; justify-content: center; width: 1.4em; height: 1.4em; margin: -.2em 0; border-radius: 50%; background: #fff; line-height: 1; vertical-align: middle; flex: none; }
+  #pm-open .unread-badge { background: #e53935; color: #fff; border-radius: 10px; padding: 0 7px; margin: 0 2px; font-size: 12px; }
+  /* 🆕 (4331_/出す_4331) 重ねた伝言の窓＝帯の下の所を覆う（犬 #shell-wait の z-index 5 より下）。窓は DOM の中で動かさず、この class の付け外しだけで重ねる。
+     iframe は高さを書かないと 150px になるので、高さは帯の 46px を引いた残りを書く。 */
+  .app-pane.pm-over { position: absolute; left: 0; right: 0; top: 46px; bottom: 0; width: 100%; height: calc(100% - 46px); z-index: 4; }
   #frame-title { font-size: 15px; font-weight: 800; }
   /* 🆕 (2883_/出す_2881) 紫の帯で 📞 が見えにくい＝📞 の後ろに白い丸（字の大きさ・帯の高さは変えない）。付けるのは shellTitleDisc_ だけ。 */
   #frame-title .ico-disc { display: inline-flex; align-items: center; justify-content: center; width: 1.4em; height: 1.4em; margin: -.2em 0; border-radius: 50%; background: #fff; line-height: 1; vertical-align: middle; }
@@ -229,6 +244,9 @@
     <div id="frame-bar">
       <button type="button" id="back-btn">◀ メニュー</button>
       <span id="frame-title">📦 振分けダッシュボード</span>
+      <!-- 🆕 (4331_/出す_4331) どの画面からも電話の伝言を上に重ねて開く。札 PHONE_MEMO_ON が入のときだけ JS が出す（初めは hidden）。赤い数字＝まだ済んでいない伝言の数（0件は出さない）。 -->
+      <button type="button" id="pm-open" hidden><span class="pm-ico">📞</span> 電話の伝言 <span class="unread-badge" id="pm-open-count" hidden>0</span></button>
+      <button type="button" id="pm-close" hidden>✖ 閉じて元の画面に戻る</button>
     </div><!-- frame-title はカードに応じて差し替え -->
 
     <iframe id="app-frame" src="" allow="fullscreen" allowfullscreen></iframe>
@@ -310,7 +328,7 @@
     //   ◀ メニューの空の読み込み（about:blank）の load では消さない＝次に読み直す時に出し直すので、残しても見えない。
     var shellWait_ = document.getElementById('shell-wait');
     function shellWaitSync_() {
-      var cur = SHELL_KEEP_[shellCur_] ? shellPanes_[shellCur_] : appFrame;
+      var cur = shellPmIsOver_() ? shellPanes_.pmemo : (SHELL_KEEP_[shellCur_] ? shellPanes_[shellCur_] : appFrame);   // 🆕 (4331_) 重ねている間は伝言の窓を見る
       if (shellWait_) shellWait_.classList.toggle('active', !!(cur && cur._swWaiting));
     }
     function shellWaitArm_(f) {
@@ -419,6 +437,92 @@
       frameTitle.appendChild(s);
       frameTitle.appendChild(document.createTextNode(t.slice(2)));
     }
+
+    // ================================================================================
+    // 🆕 (4331_/出す_4331) 帯の「📞 電話の伝言」＝どの画面からも、電話の伝言を今の画面の上に重ねて開く。
+    //   🚨 下の窓（shellCur_ の窓・使い捨ての #app-frame）の display・src・shellCur_・題名は1つも変えない
+    //      ＝見せ直しの読み直しも、使い捨ての窓の作り直しも起きない（印刷の ✓ や入力が消えない）。
+    //   🚨 伝言の窓は SHELL_KEEP_ の pmemo を使い回す（窓を2つにしない＝書きかけが消えない）。DOM の中で動かさない。
+    //   🚨 重ねるのは class pm-over の付け外しと display だけ。札 SHELL_MULTI_FRAME が切なら重ねない（今の道のまま）。
+    //   🚨 数と札は lastimport の返りの pm＝{on, pending} だけ（名前・電話番号・本文は届かない）。
+    // ================================================================================
+    var shellPmOpenBtn_ = document.getElementById('pm-open');
+    var shellPmCloseBtn_ = document.getElementById('pm-close');
+    var shellPmState_ = null;                 // lastimport から届いた {on, pending}（null＝まだ届いていない・読めない）
+    function shellPmIsOver_() {
+      var f = shellPanes_.pmemo;
+      return !!(f && f.classList.contains('pm-over') && f.style.display !== 'none');
+    }
+    function shellPmPaint_() {
+      if (!shellPmOpenBtn_ || !shellPmCloseBtn_) return;
+      var over = shellPmIsOver_();
+      var pm = shellPmState_;
+      var on = !!(SHELL_MULTI_FRAME && pm && pm.on === true);
+      shellPmOpenBtn_.hidden = !on || over;   // 重ねている間は 📞 を隠し、✖ を出す
+      shellPmCloseBtn_.hidden = !over;
+      var c = document.getElementById('pm-open-count');
+      if (c) {
+        var n = Number(pm && pm.pending);     // 赤い数字はダッシュボードの pmRenderCount_ と同じ決まり（0件・読めない・数でないときは出さない）
+        if (!on || pm.pending == null || isNaN(n) || n <= 0) { c.hidden = true; c.textContent = '0'; }
+        else { c.textContent = String(n); c.hidden = false; }
+      }
+    }
+    function shellPmCount_(pm) {
+      shellPmState_ = (pm && typeof pm === 'object')
+        ? { on: pm.on === true, pending: (typeof pm.pending === 'number' ? pm.pending : null) } : null;
+      shellPmPaint_();
+    }
+    function shellPmOpen_() {
+      if (!SHELL_MULTI_FRAME) return;
+      if (getComputedStyle(frameScreen).display === 'none') return;   // メニューを見ているときは開かない
+      if (shellPmIsOver_()) return;                                   // 連打では何もしない
+      var f = shellPanes_.pmemo;
+      var again = !!f;
+      if (!f) {                                   // 🚨 作るのは初めての1回だけ（shellShowPane_ と同じ手順・下の窓は隠さない）
+        f = document.createElement('iframe');
+        f.className = 'app-pane pm-over';         // 🚨 置く前に重ねる印を付ける＝下の窓の場所に一瞬も割り込まない
+        f.setAttribute('allow', 'fullscreen');
+        f.setAttribute('allowfullscreen', '');
+        f.style.display = 'block';
+        shellPanes_.pmemo = f;
+        frameScreen.appendChild(f);               // 🚨 置くのも1回だけ・二度と動かさない
+        f.src = EXEC + '?view=pmemo';             // openInFrame の既定の道と同じ読み先（住所も合言葉もここに書かない）
+        shellWaitArm_(f);                         // 初めて読む間だけ犬を出す
+      } else {
+        f.classList.add('pm-over');
+        f.style.display = 'block';
+      }
+      shellPmPaint_();
+      shellWaitSync_();
+      if (again) shellNudge_('pmemo');            // 出し直した伝言の窓へ「出しました」（shellShowPane_ の出し直しと同じ）
+    }
+    function shellPmClose_() {
+      var f = shellPanes_.pmemo;
+      if (f && f.classList.contains('pm-over')) {
+        f.classList.remove('pm-over');
+        f.style.display = 'none';                 // 隠れた窓の合図は受け口の⑥が捨てる（D-748）
+        shellWaitSync_();
+      }
+      shellPmPaint_();
+    }
+    // 送り主が【重ねている伝言の窓】だと確かに分かったときだけ true（たどり方は fromHiddenPane_ と同じ・あちらは変えない）。
+    function shellPmFrom_(ev) {
+      if (!shellPmIsOver_()) return false;
+      var t = shellPanes_.pmemo.contentWindow, w = ev.source;
+      for (var i = 0; i < 6 && w; i++) {
+        if (w === t) return true;
+        var p = null;
+        try { p = w.parent; } catch (e) { return false; }
+        if (!p || p === w) return false;
+        w = p;
+      }
+      return false;
+    }
+    // 下の窓が切り替わるときは、必ず先に重ねを閉じる（openInFrame の本体は1字も変えず、外から包むだけ）。
+    var shellOpenInFrame0_ = openInFrame;
+    openInFrame = function (v, t) { shellPmClose_(); return shellOpenInFrame0_(v, t); };
+    if (shellPmOpenBtn_) shellPmOpenBtn_.addEventListener('click', function () { shellPmOpen_(); });
+    if (shellPmCloseBtn_) shellPmCloseBtn_.addEventListener('click', function () { shellPmClose_(); });
     // 📦 振分けダッシュボード
     document.getElementById('card-pc').addEventListener('click', function () {
       openInFrame('pc', '📦 振分けダッシュボード');
@@ -461,6 +565,8 @@
       menuScreen.style.display = 'flex';
       appFrame.src = '';
     });
+    // 🆕 (4331_/出す_4331) ◀ メニューで重ねた伝言も閉じる（上の受け手は1バイトも変えない＝受け手をもう1つ足すだけ）。
+    document.getElementById('back-btn').addEventListener('click', function () { shellPmClose_(); });
 
     // ================================================================================
     // (1265_/D-325) 「カイポケ取込」ボタンに前回の取込日時を出す。
@@ -650,6 +756,7 @@
           cleanup();
           busy = false;
           show(d);
+          shellPmCount_(d.pm);                                // 🆕 (4331_) 帯の 📞 の札と赤い数字（pm が無い古い返りでは 📞 を出さない）
         }
         window.addEventListener('message', onMsg);
         fr = document.createElement('iframe');
@@ -711,6 +818,22 @@
         //   通す5条件（①〜⑤）は1バイトも変えていない（D-690／D-693／D-701／D-740）。
         //   分からなかったら【通す】＝正しい合図が落ちる道を1つも増やさない（fromHiddenPane_ を見よ）。
         if (SHELL_MULTI_FRAME && fromHiddenPane_(ev)) return;                  // ⑥
+        // 🆕 (4331_/出す_4331) ⑦ 重ねている伝言の窓からの合図はここで受けて return する
+        //   ＝次の行の「いま出している窓の宛先」（SHELL_ADDR_[shellCur_]）を伝言の窓で上書きしない。
+        if (SHELL_MULTI_FRAME && shellPmFrom_(ev)) {
+          if (d.to === 'ask-ticket') {
+            if (d.who !== 'pmemo' || typeof d.id !== 'string' || !/^[A-Za-z0-9]{8,32}$/.test(d.id)) return;
+            SHELL_ADDR_.pmemo = { w: ev.source, o: ev.origin };          // 出し直しの「出しました」の宛先
+            try { if (ev.source) ev.source.postMessage({ type: 'sumire-ticket', id: d.id, who: 'pmemo', none: true }, ev.origin); } catch (e) {}
+          } else if (d.to === 'dashboard') {
+            // 伝言の画面の「📦 ダッシュボード」＝前は伝言から戻る唯一の道だった。重ねている間は「元の画面に戻る」として重ねを閉じるだけにする
+            //   （下が印刷などの使い捨ての窓のとき、ダッシュボードへ切り替えると ✓ や入力が消えるため・安全側）。下がダッシュボードなら字のとおりダッシュボードが見える。
+            shellPmClose_();
+          } else if (d.to === 'menu') {
+            document.getElementById('back-btn').click();
+          }
+          return;                                                         // ほかの行き先は捨てる
+        }
         if (SHELL_MULTI_FRAME && (shellCur_ === 'pc' || shellCur_ === 'change' || shellCur_ === 'entry' || shellCur_ === 'ycheck' || shellCur_ === 'irenew' || shellCur_ === 'lcmp' || shellCur_ === 'pmemo' || shellCur_ === 'selfpay')) SHELL_ADDR_[shellCur_] = { w: ev.source, o: ev.origin };   // 🆕 (2597_) いま出している窓の返事の宛先を覚えるだけ（通す・捨てるは変えない）
         if (d.to === 'change-report') {
           // 🚨 いま既に変更報告を出しているなら何もしない
@@ -758,6 +881,8 @@
           openInFrame('lcmp', '🔍 リスト・カイポケ比較');
         } else if (d.to === 'phone-memo') {
           // 🆕 (2838_/出す_2828) 📞 電話の伝言を出す。上の inst-renew の枝と同じ作法（いま出していれば何もしない・預かり物は無い）。
+          // 🆕 (4331_/出す_4331) 札 SHELL_MULTI_FRAME が入なら、今の画面（振分けダッシュボード）の上に重ねて開く＝帯の 📞 と同じ道。切なら今までどおり窓を切り替える。
+          if (SHELL_MULTI_FRAME) { shellPmOpen_(); return; }
           if (frameTitle.textContent === '📞 電話の伝言') return;   // 次の行の題名と同じ字（2か所そろえる）
           SHELL_TICKET_ = null;
           openInFrame('pmemo', '📞 電話の伝言');
